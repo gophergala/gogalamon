@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"math"
 )
 
@@ -26,4 +27,35 @@ func (t *transform) adjustV(vx, vy float32) {
 func (t *transform) applyV() {
 	t.x += t.vx
 	t.y += t.vy
+}
+
+func NewBullet(x, y, vx, vy float32, t team) {
+	var b Bullet
+	b.x = x
+	b.y = y
+	b.vx = vx
+	b.vy = vy
+
+	log.Println("new bullet!")
+
+	b.renderId = <-NextRenderId
+	NewEntity <- &b
+}
+
+type Bullet struct {
+	transform
+	t        team
+	renderId int
+}
+
+func (b *Bullet) update(overworld *Overworld) (alive bool) {
+	b.applyV()
+	overworld.set(b, b.x, b.y, 1)
+	return true
+}
+
+func (b *Bullet) RenderInfo() RenderInfo {
+	return RenderInfo{
+		b.renderId, b.x, b.y, 0, "ball_plasma",
+	}
 }

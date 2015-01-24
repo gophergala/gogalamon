@@ -89,6 +89,8 @@ func (u *User) render(overworld *Overworld, wait chan *User) {
 		s.Objs[i] = entity.RenderInfo()
 		s.Objs[i].X *= scaleFactor
 		s.Objs[i].Y *= scaleFactor
+		s.Objs[i].X -= imageSizes[s.Objs[i].N]
+		s.Objs[i].Y -= imageSizes[s.Objs[i].N]
 	}
 
 	m := UserMessage{
@@ -177,12 +179,14 @@ func (u *User) recieveMessages() {
 
 type PlayerShip struct {
 	transform
-	user      *User
-	radius    float32
-	health    int
-	maxHealth int
-	rotation  float32
-	renderId  int
+	user           *User
+	radius         float32
+	health         int
+	maxHealth      int
+	rotation       float32
+	renderId       int
+	reloadTime     int
+	fullReloadTime int
 }
 
 func NewPlayerShip(user *User) {
@@ -193,6 +197,7 @@ func NewPlayerShip(user *User) {
 	p.maxHealth = 100
 	p.speed = 1
 	p.renderId = <-NextRenderId
+	p.fullReloadTime = framesPerSecond / 2
 
 	NewEntity <- &p
 }
@@ -265,6 +270,15 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 			}
 		}
 		p.user.chatMessage = ""
+	}
+
+	p.reloadTime += 1
+	if p.user.keys["f"] && p.fullReloadTime < p.reloadTime {
+		r := float64(p.rotation-90) / 180 * math.Pi
+		vx := float32(math.Cos(r))*1 + p.vx
+		vy := float32(math.Sin(r))*1 + p.vy
+		p.reloadTime = 0
+		go NewBullet(p.x, p.y, vx, vy, TeamGophers)
 	}
 
 	//Keys cleanup

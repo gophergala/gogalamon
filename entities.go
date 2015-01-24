@@ -1,9 +1,6 @@
 package main
 
-import (
-	"log"
-	"math"
-)
+import "math"
 
 type transform struct {
 	x, y   float32
@@ -35,8 +32,7 @@ func NewBullet(x, y, vx, vy float32, t team) {
 	b.y = y
 	b.vx = vx
 	b.vy = vy
-
-	log.Println("new bullet!")
+	b.timeLeft = framesPerSecond * 3
 
 	b.renderId = <-NextRenderId
 	NewEntity <- &b
@@ -46,12 +42,14 @@ type Bullet struct {
 	transform
 	t        team
 	renderId int
+	timeLeft int
 }
 
 func (b *Bullet) update(overworld *Overworld) (alive bool) {
 	b.applyV()
+	b.timeLeft -= 1
 	overworld.set(b, b.x, b.y, 1)
-	return true
+	return b.timeLeft > 0
 }
 
 func (b *Bullet) RenderInfo() RenderInfo {

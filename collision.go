@@ -24,6 +24,7 @@ func (o *Overworld) set(e Entity, x, y, r float32) {
 		}
 	} else {
 		c = new(Colider)
+		o.all[e] = c
 	}
 	c.x, c.y, c.r = x, y, r
 	for _, newSector := range c.sectors() {

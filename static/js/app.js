@@ -149,6 +149,11 @@ function init() {
 	};
 
 
+	sweetPrompt("Title", "Description Content", "Confirm", "Cancel", function(response) {
+		console.log('This is your response: ' + response);
+	});
+
+
     function update() {
 		// Will cause the circle to wrap back
 		if(circle.x > stage.canvas.width) { 

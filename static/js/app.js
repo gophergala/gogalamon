@@ -148,10 +148,8 @@ function init() {
 		} // end if
 	};
 
-
-	sweetPrompt("Title", "Description Content", "Confirm", "Cancel", function(response) {
-		console.log('This is your response: ' + response);
-	});
+	// Sweet jesus the normal prompts are ugly
+	var playerName = prompt("Please enter your player name");
 
 
     function update() {

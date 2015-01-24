@@ -19,8 +19,9 @@ function init() {
 			viewCenter.y = jsonMessage.Data.ViewY;
 
 			onScreenObjects = jsonMessage.Data.Objs;
-		} // end if/else if
 
+			update();
+		} // end if/else if
 	};
 
 
@@ -126,9 +127,9 @@ function init() {
 
 
 	// Set the framerate for the ticker
-	createjs.Ticker.setFPS(30);
+	//createjs.Ticker.setFPS(30);
 	// Update stage will render next frame
-    createjs.Ticker.addEventListener("tick", update);
+    //createjs.Ticker.addEventListener("tick", update);
 
 
     // Text chat input onkeydown event
@@ -164,7 +165,14 @@ function init() {
 		User    : playerName
 	}));
 
+	var currentNames = new Set();
+	var nameCache = {};
 
+	var sortFunction = function(obj1, obj2, options) {
+	     if (obj1.name > obj2.name) { return 1; }
+	     if (obj1.name < obj2.name) { return -1; }
+	     return 0;
+	}
 
     function update() {
     	// To cache an object: DisplayObject.cache()
@@ -172,11 +180,13 @@ function init() {
     	// Get the mainCanvas
     	var mainCanvas = document.getElementById("mainCanvas");
 
+		var newNames = new Set();
+    	for (var i = 0; i < onScreenObjects.length; i++){
+    		newNames.add(onScreenObjects[i].I)
+    	}
+    	newObjects = onScreenObjects;
 
-
-    	removeOldChildren(stage.children, onScreenObjects);
-
-
+    	removeOldChildren(newNames);
 
 		// Place the far starfield
     	for (var i = mod(viewCenter.x * -0.1) - 512; i < mainCanvas.width; i += 512) {
@@ -184,6 +194,7 @@ function init() {
     			var starFieldFar = new createjs.Bitmap("img/starfield_far.png");
 				starFieldFar.x = i;
 				starFieldFar.y = j;
+				starFieldFar.name = -3;
 
 				stage.addChild(starFieldFar);
     		};
@@ -195,6 +206,7 @@ function init() {
     			var starFieldNear = new createjs.Bitmap("img/starfield_near.png");
 				starFieldNear.x = i;
 				starFieldNear.y = j;
+				starFieldNear.name = -2;
 
 				stage.addChild(starFieldNear);
     		};
@@ -206,13 +218,14 @@ function init() {
     			var starFieldMid = new createjs.Bitmap("img/starfield_middle.png");
 				starFieldMid.x = i;
 				starFieldMid.y = j;
+				starFieldMid.name = -1;
 
 				stage.addChild(starFieldMid);
     		};
     	};
 
-    	// Sort the IDs for the background
-    	//backgroundIds.sort();
+
+
 
     	// Create and place each new object we're sent
     	for(var i = 0; i < onScreenObjects.length; i++) {
@@ -222,7 +235,7 @@ function init() {
     		var objectBitmap;
     		var addChildBool;
 
-    		if(stage.children.indexOf(currentObject) == -1) {
+    		if(!currentNames.has(currentObject.I)) {
     			// Create the bitmap object
     			objectBitmap = new createjs.Bitmap("img/" + currentObject.N + ".png");
 
@@ -234,11 +247,13 @@ function init() {
 	    		objectBitmap.regY = objectBitmap.image.height / 2;
 
 	    		addChildBool = true;
+	    		nameCache[currentObject.I] = objectBitmap;
     		} else {
-    			objectBitmap = stage.children[stage.children.indexOf(currentObject)];
-
+    			objectBitmap = nameCache[currentObject.I];
     			addChildBool = false;
     		} // end if/else
+
+    		console.log(nameCache);
 
     		objectBitmap.x = Math.round(currentObject.X - viewCenter.x + mainCanvas.width/2);
     		objectBitmap.y = Math.round(currentObject.Y - viewCenter.y + mainCanvas.height/2);
@@ -250,18 +265,27 @@ function init() {
     		} // end if
     	} // end for
 
+    	currentNames = newNames;
+    	console.log(stage.numChildren);
+
+    	
+		 stage.sortChildren(sortFunction);
+
 		stage.update();
 	} // end update()
 
-	function removeOldChildren(currentObjects, newObjects) {
-		for(var i = 0; i < currentObjects.length; i++) {
-			if(newObjects.indexOf(currentObjects[i]) == -1) {
-				var childToRemove = stage.getChildByName(currentObjects[i].I);
+	function removeOldChildren(newNames) {
+		for(var i = 0; i < stage.numChildren; i++) {
+			var child = stage.children[i];
+			if (!newNames.has(child.name)){
+				if(child.name != -1){
 
-				stage.removeChild(childToRemove);
-			} // end if
-		} // end for
-
+				console.log("Removing child with id" + child.name);
+				}
+				stage.removeChild(child);
+				delete nameCache[child.name]
+			}
+		}
 	} // end removeOldChildren()
 
 	function mod(z) {

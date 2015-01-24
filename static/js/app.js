@@ -252,8 +252,8 @@ function init() {
     			addChildBool = false;
     		} // end if/else
 
-    		objectBitmap.x = Math.round(currentObject.X - viewCenter.x + mainCanvas.width/2 + 32);
-    		objectBitmap.y = Math.round(currentObject.Y - viewCenter.y + mainCanvas.height/2 + 32);
+    		objectBitmap.x = Math.round(currentObject.X - viewCenter.x + mainCanvas.width/2 - 32);
+    		objectBitmap.y = Math.round(currentObject.Y - viewCenter.y + mainCanvas.height/2 - 32);
     		objectBitmap.rotation = currentObject.R;
 
     		// If the object is already on the stage, don't add it

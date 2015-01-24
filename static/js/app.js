@@ -3,7 +3,7 @@ function init() {
     var serverSock = new WebSocket("ws://" + window.location.host + "/sock/");
 
     serverSock.onmessage = function(message) {
-		console.log("Someone sent: ", message);
+		
 		var jsonMessage = JSON.parse(message.data);
 
 
@@ -15,41 +15,42 @@ function init() {
 			// Scroll to bottom of textbox
 			chatOutput.scrollTop = chatOutput.scrollHeight;
 		} else if(jsonMessage.Event == "screenUpdate") {
+			viewCenter.x = jsonMessage.Data.ViewX;
+			viewCenter.y = jsonMessage.Data.ViewY;
 
-		}
+			onScreenObjects = jsonMessage.Data.Objs;
+		} // end if/else if
+
 	};
 
 
-
+	// Init the stage
 	var stage = new createjs.Stage("mainCanvas");
+	// Set the stage to clear before each render
+	stage.autoClear = true;
 
-	var circle = new createjs.Shape();
+	// Init the location, in map space, of the center (and therefor our player) of our view
+	var viewCenter = {
+		x : null,
+		y : null
+	}
 
-	// To cache an object: DisplayObject.cache()
+	// Init the array holding all the objects we're going to render on the screen
+	var onScreenObjects = [];
 
-	circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 25);
-	circle.x = 400;
-	circle.y = 250;
-	stage.addChild(circle);
-
-	stage.update();
-
-	// The ammount the player should move every time a movement key is pressed
-	var moveStep = 10;
 
 	// Keypress listener
 	var listener = new window.keypress.Listener();
+
 	listener.register_many([
 	{
 	    "keys"       : "w",
 	    "on_keydown" : function() {
-            console.log("You pressed w");
             serverSock.send(JSON.stringify({
 				Event: "w down"
 			}));
         },
         "on_keyup"   : function(e) {
-            console.log("And now you've released w.");
             serverSock.send(JSON.stringify({
 				Event: "w up"
 			}));
@@ -58,13 +59,11 @@ function init() {
 	{
 		"keys"       : "a",
 	    "on_keydown" : function() {
-            console.log("You pressed a");
             serverSock.send(JSON.stringify({
 				Event: "a down"
 			}));
         },
         "on_keyup"   : function(e) {
-            console.log("And now you've released a.");
             serverSock.send(JSON.stringify({
 				Event: "a up"
 			}));
@@ -73,13 +72,11 @@ function init() {
 	{
 		"keys"       : "s",
 	    "on_keydown" : function() {
-            console.log("You pressed s");
             serverSock.send(JSON.stringify({
 				Event: "s down"
 			}));
         },
         "on_keyup"   : function(e) {
-            console.log("And now you've released s.");
             serverSock.send(JSON.stringify({
 				Event: "s up"
 			}));
@@ -88,13 +85,11 @@ function init() {
 	{
 		"keys"       : "d",
 	    "on_keydown" : function() {
-            console.log("You pressed d");
             serverSock.send(JSON.stringify({
 				Event: "d down"
 			}));
         },
         "on_keyup"   : function(e) {
-            console.log("And now you've released d.");
             serverSock.send(JSON.stringify({
 				Event: "d up"
 			}));
@@ -155,23 +150,33 @@ function init() {
 		User    : playerName
 	}));
 
+
     function update() {
-		// Will cause the circle to wrap back
-		if(circle.x > stage.canvas.width) { 
-			circle.x = stage.canvas.width;
-		} // end if
-		if(circle.x < 0) {
-			circle.x = 0;
-		} // end if
-		if(circle.y > stage.canvas.height) { 
-			circle.y = stage.canvas.height;
-		} // end if
-		if(circle.y < 0) {
-			circle.y = 0;
-		} // end if
+    	// To cache an object: DisplayObject.cache()
+
+    	// Remove all the objects on the canvas
+    	stage.removeAllChildren();
+
+    	// Create and place each new object we're sent
+    	for(var i = 0; i < onScreenObjects.length; i++) {
+    		// Get the object we want to render
+    		var currentObject = onScreenObjects[i];
+    		
+    		// Create the bitmap object
+    		var objectBitmap = new createjs.Bitmap("img/" + currentObject.N + ".png");
+
+    		var mainCanvas = document.getElementById("mainCanvas");
+
+    		objectBitmap.x = Math.round(currentObject.X - viewCenter.x + mainCanvas.width/2);
+    		objectBitmap.y = Math.round(currentObject.Y - viewCenter.y + mainCanvas.height/2);
+    		objectBitmap.rotation = currentObject.R;
+
+    		stage.addChild(objectBitmap);
+    	} // end for
+
+
 
 		stage.update();
-
 	} // end update()
 
 } // end init()

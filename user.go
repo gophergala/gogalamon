@@ -25,6 +25,25 @@ func wsHandler(s *websocket.Conn) {
 		defer u.connectedMutex.Unlock()
 		u.connected = false
 	}()
+
+	u.messages = make(chan *UserMessage)
+	u.disconnect = make(chan struct{}, 1) //Buffer should be size of things
+	//which can cause disconnect
+
+	go u.recieveMessages()
+
+	for {
+		select {
+		case m := <-u.messages:
+			err := u.send(m)
+			if err != nil {
+				log.Println("User error sending message,", err)
+				return
+			}
+		case <-u.disconnect:
+			return
+		}
+	}
 }
 
 type User struct {
@@ -34,17 +53,18 @@ type User struct {
 
 	connectedMutex sync.Mutex
 	connected      bool
+
+	messages   chan *UserMessage
+	disconnect chan struct{}
 }
 
-func (u *User) send(event string, data interface{}) error {
-	type Message struct {
-		event string
-		data  interface{}
-	}
+type UserMessage struct {
+	event string
+	data  interface{}
+}
 
-	m := Message{event, data}
-
-	err := u.jEnc.Encode(&m)
+func (u *User) send(m *UserMessage) error {
+	err := u.jEnc.Encode(m)
 	if err != nil {
 		return err
 	}
@@ -61,11 +81,28 @@ func (u *User) send(event string, data interface{}) error {
 	return nil
 }
 
+func (u *User) recieveMessages() {
+	defer func() {
+		u.disconnect <- struct{}{}
+	}()
+	d := json.NewDecoder(u.s)
+
+	for {
+		m := make(map[string]interface{})
+		err := d.Decode(&m)
+		if err != nil {
+			log.Println("Error reading message from client,", err)
+			return
+		}
+	}
+}
+
 type PlayerShip struct {
 	user *User
 }
 
 func (p *PlayerShip) update() (alive bool) {
+
 	p.user.connectedMutex.Lock()
 	defer p.user.connectedMutex.Unlock()
 	return p.user.connected

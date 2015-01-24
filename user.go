@@ -69,6 +69,8 @@ type User struct {
 	viewY float32
 }
 
+const scaleFactor = 16
+
 func (u *User) render(overworld *Overworld, wait chan *User) {
 	type ScreenUpdate struct {
 		ViewX float32
@@ -77,13 +79,15 @@ func (u *User) render(overworld *Overworld, wait chan *User) {
 	}
 
 	var s ScreenUpdate
-	s.ViewX = u.viewX
-	s.ViewY = u.viewY
+	s.ViewX = u.viewX * scaleFactor
+	s.ViewY = u.viewY * scaleFactor
 	entities := overworld.query(nil, u.viewX, u.viewY, 100)
 	s.Objs = make([]RenderInfo, len(entities))
 
 	for i, entity := range entities {
 		s.Objs[i] = entity.RenderInfo()
+		s.Objs[i].X *= scaleFactor
+		s.Objs[i].Y *= scaleFactor
 	}
 
 	m := UserMessage{
@@ -171,16 +175,17 @@ func (u *User) recieveMessages() {
 }
 
 type PlayerShip struct {
-	user      *User
-	x         float32
-	y         float32
-	vx        float32
-	vy        float32
-	accel     float32
+	transform
+	user *User
+	// x         float32
+	// y         float32
+	// vx        float32
+	// vy        float32
+	// accel     float32
 	radius    float32
 	health    int
 	maxHealth int
-	speed     float32
+	// speed     float32
 }
 
 func NewPlayerShip(user *User) {
@@ -215,10 +220,10 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 		dx += p.speed
 	}
 	if p.user.keys["w"] {
-		dy += p.speed
+		dy -= p.speed
 	}
 	if p.user.keys["s"] {
-		dy -= p.speed
+		dy += p.speed
 	}
 	if dy*dx != 0 {
 		dx /= 1.41421356237

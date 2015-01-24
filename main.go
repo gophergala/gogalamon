@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"runtime"
 	"time"
 
 	"net/http"
@@ -10,6 +11,7 @@ import "golang.org/x/net/websocket"
 
 func main() {
 	log.Println("Starting gogalamon server")
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	http.Handle("/", http.FileServer(http.Dir("static/")))
 	http.Handle("/sock/", websocket.Handler(wsHandler))
@@ -31,6 +33,8 @@ mainloop:
 				if entity.update() {
 					entities[place] = entity
 					place++
+				} else {
+					entity.destroy()
 				}
 				i++
 			}
@@ -55,6 +59,7 @@ mainloop:
 
 type Entity interface {
 	update() (alive bool)
+	destroy()
 }
 
 type V2 [2]float32

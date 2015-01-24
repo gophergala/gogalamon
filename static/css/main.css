@@ -1,0 +1,40 @@
+canvas {
+	position: absolute;
+
+	border-style: solid;
+    border-width: 1px;
+	border-color: black;
+}
+
+#chat_box {
+	position: absolute;
+
+	left: 850px;
+
+	width  : 200px;
+	height : 400px;
+
+	border-style: solid;
+    border-width: 1px;
+	border-color: black;
+}
+
+#chat_output {
+	width  : 200px;
+	height : 375px;
+
+	border-style: solid;
+    border-width: 1px;
+	border-color: black;
+}
+
+#chat_input {
+	width  : 200px;
+	height : 25px;
+
+	border-style: solid;
+    border-width: 1px;
+	border-color: black;
+}
+
+

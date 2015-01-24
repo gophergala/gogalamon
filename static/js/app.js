@@ -156,11 +156,12 @@ function init() {
     	// Remove all the objects on the canvas
     	stage.removeAllChildren();
 
+    	// Get the mainCanvas
     	var mainCanvas = document.getElementById("mainCanvas");
 
     	
 
-
+		// Place the far starfield
     	for (var i = mod(viewCenter.x * -0.1) - 512; i < mainCanvas.width; i += 512) {
     		for (var j = mod(viewCenter.y * -0.1) - 512; j < mainCanvas.height; j += 512) {
     			var starFieldFar = new createjs.Bitmap("img/starfield_far.png");
@@ -171,6 +172,7 @@ function init() {
     		};
     	};
 
+    	// Place the near starfield
     	for (var i = mod(viewCenter.x * -0.9) - 512; i < mainCanvas.width; i += 512) {
     		for (var j = mod(viewCenter.y * -0.9) - 512; j < mainCanvas.height; j += 512) {
     			var starFieldNear = new createjs.Bitmap("img/starfield_near.png");
@@ -190,7 +192,8 @@ function init() {
     		// Create the bitmap object
     		var objectBitmap = new createjs.Bitmap("img/" + currentObject.N + ".png");
 
-    		
+    		objectBitmap.regX = 32;
+    		objectBitmap.regY = 32;
 
     		objectBitmap.x = Math.round(currentObject.X - viewCenter.x + mainCanvas.width/2);
     		objectBitmap.y = Math.round(currentObject.Y - viewCenter.y + mainCanvas.height/2);

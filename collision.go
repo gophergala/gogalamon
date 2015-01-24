@@ -40,13 +40,16 @@ func (o *Overworld) remove(e Entity) {
 	}
 }
 
-func (o *Overworld) query(x, y, r float32) []Entity {
+func (o *Overworld) query(e Entity, x, y, r float32) []Entity {
 	var entities []Entity
 
 	c := Colider{x, y, r}
 
 	for _, sector := range c.sectors() {
 		for entity, col := range o.sectors[sector] {
+			if entity == e {
+				continue
+			}
 			dx := col.x - x
 			dy := col.y - y
 			totalR := col.r + r

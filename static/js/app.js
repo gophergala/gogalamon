@@ -13,6 +13,7 @@ function init() {
 
 	stage.update();
 
+	// The ammount the player should move every time a movement key is pressed
 	var moveStep = 10;
 
 	// Keypress listener
@@ -30,6 +31,20 @@ function init() {
 	listener.simple_combo("s", function() {
 		circle.y += moveStep;
 	});
+
+	// Get the chat input box
+	var chatInput = document.getElementById('chat_input');
+	// Stop listening for keyboard events for the canvas when the chat box is focussed
+	chatInput.addEventListener("focus", chatInputFocussed);
+	function chatInputFocussed() {
+		listener.stop_listening();
+	} // end chatInputFocussed()
+	// Start listening again when it loses focus
+	chatInput.addEventListener("blur", chatInputFocusLost);
+	function chatInputFocusLost() {
+		listener.listen();
+	} // end chatInputFocusLost()
+
 
 
 	createjs.Ticker.setFPS(30);

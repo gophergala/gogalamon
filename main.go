@@ -23,10 +23,12 @@ func main() {
 
 var NewEntity = make(chan Entity)
 
+const framesPerSecond = 30
+
 func mainLoop() {
 	var entities []Entity
 	overworld := NewOverworld()
-	ticker := time.Tick(time.Second / 30)
+	ticker := time.Tick(time.Second / framesPerSecond)
 mainloop:
 	for {
 		{
@@ -62,6 +64,22 @@ mainloop:
 
 type Entity interface {
 	update(overworld *Overworld) (alive bool)
+}
+
+type team uint
+
+type EntityTeam interface {
+	team() team
+}
+
+const (
+	TeamPirates = team(iota)
+	TeamGophers
+	TeamPythons
+)
+
+type EntityDamage interface {
+	damage(damage int, teamSource team)
 }
 
 type V2 [2]float32

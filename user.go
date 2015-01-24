@@ -117,12 +117,12 @@ func (u *User) recieveMessages() {
 				u.keysMutex.Unlock()
 			}
 		default:
-			if event[1:] == " down" {
+			if event[len(event)-5:] == " down" {
 				u.keysMutex.Lock()
 				u.keys[event[:1]] = true
 				u.keyDown[event[:1]] = true
 				u.keysMutex.Unlock()
-			} else if event[1:] == " up" {
+			} else if event[len(event)-3:] == " up" {
 				u.keysMutex.Lock()
 				u.keys[event[:1]] = false
 				u.keyUp[event[:1]] = true
@@ -136,13 +136,16 @@ func (u *User) recieveMessages() {
 }
 
 type PlayerShip struct {
-	user   *User
-	x      float32
-	y      float32
-	vx     float32
-	vy     float32
-	accel  float32
-	radius float32
+	user      *User
+	x         float32
+	y         float32
+	vx        float32
+	vy        float32
+	accel     float32
+	radius    float32
+	health    int
+	maxHealth int
+	speed     float32
 }
 
 func NewPlayerShip(user *User) {
@@ -150,6 +153,8 @@ func NewPlayerShip(user *User) {
 	p.user = user
 	p.accel = 0.1
 	p.radius = 0.1
+	p.maxHealth = 100
+	p.speed = 1
 
 	NewEntity <- &p
 }
@@ -158,19 +163,27 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 	p.user.keysMutex.Lock()
 	defer p.user.keysMutex.Unlock()
 
+	if p.health <= 0 {
+		p.health = p.maxHealth
+		p.x = 0
+		p.y = 0
+		p.vx = 0
+		p.vy = 0
+	}
+
 	var dx float32
 	var dy float32
 	if p.user.keys["a"] {
-		dx -= 1
+		dx -= p.speed
 	}
 	if p.user.keys["d"] {
-		dx += 1
+		dx += p.speed
 	}
 	if p.user.keys["w"] {
-		dy += 1
+		dy += p.speed
 	}
 	if p.user.keys["s"] {
-		dy -= 1
+		dy -= p.speed
 	}
 	if dy*dx != 0 {
 		dx /= 1.41421356237
@@ -225,4 +238,8 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 	p.user.connectedMutex.Lock()
 	defer p.user.connectedMutex.Unlock()
 	return p.user.connected
+}
+
+func (p *PlayerShip) damage(damage int, teamSource team) {
+	p.health -= damage
 }

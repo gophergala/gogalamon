@@ -166,7 +166,7 @@ function init() {
 
 
 	// Var to hold IDs of the backgrounds
-	var backgroundIds = [];
+	//var backgroundIds = [];
 
 
     function update() {
@@ -188,8 +188,8 @@ function init() {
 				starFieldFar.x = i;
 				starFieldFar.y = j;
 
-				starFieldFar.name = backgroundIds.length;
-				onScreenObjects.push(starFieldFar);
+				//starFieldFar.name = backgroundIds.length;
+				//onScreenObjects.push(starFieldFar);
 
 				stage.addChild(starFieldFar);
     		};
@@ -202,8 +202,8 @@ function init() {
 				starFieldNear.x = i;
 				starFieldNear.y = j;
 
-				starFieldNear.name = backgroundIds.length;
-				onScreenObjects.push(starFieldNear);
+				//starFieldNear.name = backgroundIds.length;
+				//onScreenObjects.push(starFieldNear);
 
 				stage.addChild(starFieldNear);
     		};
@@ -216,15 +216,15 @@ function init() {
 				starFieldMid.x = i;
 				starFieldMid.y = j;
 
-				starFieldMid.name = backgroundIds.length;
-				onScreenObjects.push(starFieldMid);
+				//starFieldMid.name = backgroundIds.length;
+				//onScreenObjects.push(starFieldMid);
 
 				stage.addChild(starFieldMid);
     		};
     	};
 
     	// Sort the IDs for the background
-    	backgroundIds.sort();
+    	//backgroundIds.sort();
 
     	// Create and place each new object we're sent
     	for(var i = 0; i < onScreenObjects.length; i++) {

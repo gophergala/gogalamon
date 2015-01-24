@@ -1,10 +1,7 @@
 package main
 
 import (
-	"image/png"
-	"io/ioutil"
 	"log"
-	"os"
 	"runtime"
 	"time"
 
@@ -14,12 +11,6 @@ import "golang.org/x/net/websocket"
 
 func main() {
 	log.Println("Starting gogalamon server")
-
-	err := readImageSizes()
-	if err != nil {
-		panic(err)
-	}
-	log.Println(imageSizes)
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -35,7 +26,7 @@ func main() {
 	}()
 
 	go mainLoop()
-	err = http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", nil)
 	panic(err)
 }
 
@@ -125,29 +116,4 @@ type RenderInfo struct {
 	Y float32
 	R float32
 	N string //name
-}
-
-var imageSizes = make(map[string]float32)
-
-func readImageSizes() error {
-	infos, err := ioutil.ReadDir("static/img/")
-	if err != nil {
-		return err
-	}
-	for _, info := range infos {
-		if !info.IsDir() {
-			name := info.Name()
-			file, err := os.Open("static/img/" + name)
-			defer file.Close()
-			if err != nil {
-				return err
-			}
-			img, err := png.Decode(file)
-			if err != nil {
-				return err
-			}
-			imageSizes[name[:len(name)-4]] = float32(img.Bounds().Dx()) / 2
-		}
-	}
-	return nil
 }

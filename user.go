@@ -89,8 +89,6 @@ func (u *User) render(overworld *Overworld, wait chan *User) {
 		s.Objs[i] = entity.RenderInfo()
 		s.Objs[i].X *= scaleFactor
 		s.Objs[i].Y *= scaleFactor
-		s.Objs[i].X -= imageSizes[s.Objs[i].N]
-		s.Objs[i].Y -= imageSizes[s.Objs[i].N]
 	}
 
 	m := UserMessage{

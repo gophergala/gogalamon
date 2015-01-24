@@ -132,7 +132,10 @@ function init() {
 			// Send the chat message
 			serverSock.send(JSON.stringify({
 				Event: "chatMessage",
-				Data: chatInputBox.value
+				Data: {
+					User    : playerName,
+					Message : chatInputBox.value
+				}
 			}));
 			//.send(chatInputBox.value);
 

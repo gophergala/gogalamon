@@ -165,9 +165,6 @@ function init() {
 	}));
 
 
-	// Var to hold IDs of the backgrounds
-	//var backgroundIds = [];
-
 
     function update() {
     	// To cache an object: DisplayObject.cache()
@@ -188,22 +185,16 @@ function init() {
 				starFieldFar.x = i;
 				starFieldFar.y = j;
 
-				//starFieldFar.name = backgroundIds.length;
-				//onScreenObjects.push(starFieldFar);
-
 				stage.addChild(starFieldFar);
     		};
     	};
 
     	// Place the mid starfield
-    	for (var i = mod(viewCenter.x * -0.9) - 512; i < mainCanvas.width; i += 512) {
-    		for (var j = mod(viewCenter.y * -0.9) - 512; j < mainCanvas.height; j += 512) {
+    	for (var i = mod(viewCenter.x * -0.4) - 512; i < mainCanvas.width; i += 512) {
+    		for (var j = mod(viewCenter.y * -0.4) - 512; j < mainCanvas.height; j += 512) {
     			var starFieldNear = new createjs.Bitmap("img/starfield_near.png");
 				starFieldNear.x = i;
 				starFieldNear.y = j;
-
-				//starFieldNear.name = backgroundIds.length;
-				//onScreenObjects.push(starFieldNear);
 
 				stage.addChild(starFieldNear);
     		};
@@ -215,9 +206,6 @@ function init() {
     			var starFieldMid = new createjs.Bitmap("img/starfield_middle.png");
 				starFieldMid.x = i;
 				starFieldMid.y = j;
-
-				//starFieldMid.name = backgroundIds.length;
-				//onScreenObjects.push(starFieldMid);
 
 				stage.addChild(starFieldMid);
     		};
@@ -242,8 +230,8 @@ function init() {
     			objectBitmap.name = currentObject.I;
 
     			// Set the middle of the image (using the ship's size)
-	    		objectBitmap.regX = 32;
-	    		objectBitmap.regY = 32;
+	    		objectBitmap.regX = objectBitmap.image.width / 2;
+	    		objectBitmap.regY = objectBitmap.image.height / 2;
 
 	    		addChildBool = true;
     		} else {
@@ -261,10 +249,6 @@ function init() {
     			stage.addChild(objectBitmap);
     		} // end if
     	} // end for
-
-    	for(var j = 0; j < stage.numChildren; j++) {
-    		console.log(stage.getChildAt(j));
-    	}
 
 		stage.update();
 	} // end update()

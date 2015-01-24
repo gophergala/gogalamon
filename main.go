@@ -15,11 +15,13 @@ func main() {
 
 	http.Handle("/", http.FileServer(http.Dir("static/")))
 	http.Handle("/sock/", websocket.Handler(wsHandler))
+
+	go mainLoop()
 	err := http.ListenAndServe(":8080", nil)
 	panic(err)
 }
 
-var NewEntity chan Entity
+var NewEntity = make(chan Entity)
 
 func mainLoop() {
 	var entities []Entity
@@ -34,7 +36,8 @@ mainloop:
 					entities[place] = entity
 					place++
 				} else {
-					entity.destroy()
+
+					//OVERWORLD REMOVE ENTITY
 				}
 				i++
 			}
@@ -59,7 +62,6 @@ mainloop:
 
 type Entity interface {
 	update() (alive bool)
-	destroy()
 }
 
 type V2 [2]float32

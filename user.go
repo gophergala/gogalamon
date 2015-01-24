@@ -117,12 +117,12 @@ func (u *User) recieveMessages() {
 				u.keysMutex.Unlock()
 			}
 		default:
-			if event[len(event)-5:] == " down" {
+			if event[1:] == " down" {
 				u.keysMutex.Lock()
 				u.keys[event[:1]] = true
 				u.keyDown[event[:1]] = true
 				u.keysMutex.Unlock()
-			} else if event[len(event)-3:] == " up" {
+			} else if event[1:] == " up" {
 				u.keysMutex.Lock()
 				u.keys[event[:1]] = false
 				u.keyUp[event[:1]] = true

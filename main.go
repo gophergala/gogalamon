@@ -29,36 +29,33 @@ func mainLoop() {
 	var entities []Entity
 	overworld := NewOverworld()
 	ticker := time.Tick(time.Second / framesPerSecond)
-mainloop:
-	for {
-		{
-			var i, place int
-			for i < len(entities) {
-				entity := entities[i]
-				if entity.update(overworld) {
-					entities[place] = entity
-					place++
-				} else {
-					overworld.remove(entity)
-				}
-				i++
-			}
-			lastPlace := place
-			for place < len(entities) {
-				entities[place] = nil
-				place++
-			}
-			entities = entities[:lastPlace]
-		}
-		for {
-			select {
-			case <-ticker:
-				continue mainloop
-			case entity := <-NewEntity:
-				entities = append(entities, entity)
-			}
 
+	for {
+		select {
+		case <-ticker:
+			{
+				var i, place int
+				for i < len(entities) {
+					entity := entities[i]
+					if entity.update(overworld) {
+						entities[place] = entity
+						place++
+					} else {
+						overworld.remove(entity)
+					}
+					i++
+				}
+				lastPlace := place
+				for place < len(entities) {
+					entities[place] = nil
+					place++
+				}
+				entities = entities[:lastPlace]
+			}
+		case entity := <-NewEntity:
+			entities = append(entities, entity)
 		}
+
 	}
 }
 

@@ -16,6 +16,14 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("static/")))
 	http.Handle("/sock/", websocket.Handler(wsHandler))
 
+	go func() {
+		var i int
+		for {
+			NextRenderId <- i
+			i++
+		}
+	}()
+
 	go mainLoop()
 	err := http.ListenAndServe(":8080", nil)
 	panic(err)
@@ -99,7 +107,10 @@ type EntityDamage interface {
 
 type V2 [2]float32
 
+var NextRenderId = make(chan int)
+
 type RenderInfo struct {
+	I int
 	X float32
 	Y float32
 	R float32

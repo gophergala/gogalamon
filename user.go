@@ -182,6 +182,7 @@ type PlayerShip struct {
 	health    int
 	maxHealth int
 	rotation  float32
+	renderId  int
 }
 
 func NewPlayerShip(user *User) {
@@ -191,6 +192,7 @@ func NewPlayerShip(user *User) {
 	p.radius = 0.1
 	p.maxHealth = 100
 	p.speed = 1
+	p.renderId = <-NextRenderId
 
 	NewEntity <- &p
 }
@@ -280,7 +282,7 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 
 func (p *PlayerShip) RenderInfo() RenderInfo {
 	return RenderInfo{
-		p.x, p.y, p.rotation, "ship",
+		p.renderId, p.x, p.y, p.rotation, "ship",
 	}
 }
 

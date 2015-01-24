@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"log"
+	"math"
 	"sync"
 	"time"
 
@@ -176,22 +177,17 @@ func (u *User) recieveMessages() {
 
 type PlayerShip struct {
 	transform
-	user *User
-	// x         float32
-	// y         float32
-	// vx        float32
-	// vy        float32
-	// accel     float32
+	user      *User
 	radius    float32
 	health    int
 	maxHealth int
-	// speed     float32
+	rotation  float32
 }
 
 func NewPlayerShip(user *User) {
 	var p PlayerShip
 	p.user = user
-	p.accel = 0.1
+	p.accel = 0.05
 	p.radius = 0.1
 	p.maxHealth = 100
 	p.speed = 1
@@ -230,12 +226,12 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 		dy /= 1.41421356237
 	}
 	{
-		a := p.accel
-		ra := 1 - a
-		p.vx = ra*p.vx + a*dx
-		p.vy = ra*p.vy + a*dy
-		p.x += p.vx
-		p.y += p.vy
+		if dx != 0 || dy != 0 {
+			p.rotation = float32(math.Atan2(float64(dx), float64(-1*dy))) /
+				(math.Pi * 2) * 360
+		}
+		p.adjustV(dx, dy)
+		p.applyV()
 		p.user.viewX = p.x
 		p.user.viewY = p.y
 	}
@@ -284,7 +280,7 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 
 func (p *PlayerShip) RenderInfo() RenderInfo {
 	return RenderInfo{
-		p.x, p.y, 0, "ship",
+		p.x, p.y, p.rotation, "ship",
 	}
 }
 

@@ -22,3 +22,8 @@ func (t *transform) adjustV(vx, vy float32) {
 	t.vx += ax
 	t.vy += ay
 }
+
+func (t *transform) applyV() {
+	t.x += t.vx
+	t.y += t.vy
+}

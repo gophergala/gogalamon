@@ -57,10 +57,12 @@ type User struct {
 
 	messages chan *UserMessage
 
-	keysMutex sync.Mutex
-	keys      map[string]bool
-	keyDown   map[string]bool
-	keyUp     map[string]bool
+	keysMutex   sync.Mutex
+	keys        map[string]bool
+	keyDown     map[string]bool
+	keyUp       map[string]bool
+	chatMessage string
+	Username    string
 }
 
 type UserMessage struct {
@@ -101,7 +103,19 @@ func (u *User) recieveMessages() {
 			log.Println("Unable to cast event from user to string")
 			return
 		}
-		switch {
+		switch event {
+		case "chatMessage":
+			if msg, ok := m["Message"].(string); ok {
+				u.keysMutex.Lock()
+				u.chatMessage = msg
+				u.keysMutex.Unlock()
+			}
+		case "username":
+			if name, ok := m["User"].(string); ok {
+				u.keysMutex.Lock()
+				u.Username = name
+				u.keysMutex.Unlock()
+			}
 		default:
 			if event[1:] == " down" {
 				u.keysMutex.Lock()
@@ -122,23 +136,25 @@ func (u *User) recieveMessages() {
 }
 
 type PlayerShip struct {
-	user  *User
-	x     float32
-	y     float32
-	vx    float32
-	vy    float32
-	accel float32
+	user   *User
+	x      float32
+	y      float32
+	vx     float32
+	vy     float32
+	accel  float32
+	radius float32
 }
 
 func NewPlayerShip(user *User) {
 	var p PlayerShip
 	p.user = user
 	p.accel = 0.1
+	p.radius = 0.1
 
 	NewEntity <- &p
 }
 
-func (p *PlayerShip) update() (alive bool) {
+func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 	p.user.keysMutex.Lock()
 	defer p.user.keysMutex.Unlock()
 
@@ -168,8 +184,37 @@ func (p *PlayerShip) update() (alive bool) {
 		p.x += p.vx
 		p.y += p.vy
 	}
-	log.Println(p.x, p.y)
 
+	overworld.set(p, p.x, p.y, p.radius)
+
+	//Collision testing code
+	// log.Println("____________")
+	// log.Println(p.x, p.y)
+	//log.Println(overworld.query(nil, p.x, p.y, p.radius))
+	// log.Println(overworld.query(nil, p.x, p.y+5, p.radius))
+
+	if p.user.chatMessage != "" {
+		log.Println(p.user.Username, ":", p.user.chatMessage)
+		type Chatmsg struct {
+			User    string
+			Message string
+		}
+		msg := UserMessage{
+			"chatMessage",
+			Chatmsg{
+				p.user.Username,
+				p.user.chatMessage,
+			},
+		}
+		for _, other := range overworld.query(p, p.x, p.y, 200) {
+			if other, ok := other.(*PlayerShip); ok {
+				other.user.messages <- &msg
+			}
+		}
+		p.user.chatMessage = ""
+	}
+
+	//Keys cleanup
 	for key := range p.user.keyDown {
 		p.user.keyDown[key] = false
 	}

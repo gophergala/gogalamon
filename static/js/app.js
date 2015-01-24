@@ -4,13 +4,13 @@ function init() {
 
     serverSock.onmessage = function(message) {
 		console.log("Someone sent: ", message);
-		var jsonMessage = JSON.parse(message);
+		var jsonMessage = JSON.parse(message.data);
 
 
 		if(jsonMessage.Event == "chatMessage") {
 			// Add the chat message to the output box
 			var chatOutput = document.getElementById("chat_output");
-			chatOutput.innerHTML += jsonMessage.Data.User + ": " + (jsonMessage.Data.message).replace(/[<>]/g, '') + "<br>";
+			chatOutput.innerHTML += jsonMessage.Data.User + ": " + (jsonMessage.Data.Message).replace(/[<>]/g, '') + "<br>";
 
 			// Scroll to bottom of textbox
 			chatOutput.scrollTop = chatOutput.scrollHeight;
@@ -132,10 +132,7 @@ function init() {
 			// Send the chat message
 			serverSock.send(JSON.stringify({
 				Event: "chatMessage",
-				Data: {
-					User    : playerName,
-					Message : chatInputBox.value
-				}
+				Message : chatInputBox.value
 			}));
 			//.send(chatInputBox.value);
 
@@ -153,7 +150,10 @@ function init() {
 
 	// Sweet jesus the normal prompts are ugly
 	var playerName = prompt("Please enter your player name");
-
+	serverSock.send(JSON.stringify({
+		Event: "username",
+		User    : playerName
+	}));
 
     function update() {
 		// Will cause the circle to wrap back

@@ -25,6 +25,7 @@ var NewEntity = make(chan Entity)
 
 func mainLoop() {
 	var entities []Entity
+	overworld := NewOverworld()
 	ticker := time.Tick(time.Second / 30)
 mainloop:
 	for {
@@ -32,12 +33,11 @@ mainloop:
 			var i, place int
 			for i < len(entities) {
 				entity := entities[i]
-				if entity.update() {
+				if entity.update(overworld) {
 					entities[place] = entity
 					place++
 				} else {
-
-					//OVERWORLD REMOVE ENTITY
+					overworld.remove(entity)
 				}
 				i++
 			}
@@ -61,7 +61,7 @@ mainloop:
 }
 
 type Entity interface {
-	update() (alive bool)
+	update(overworld *Overworld) (alive bool)
 }
 
 type V2 [2]float32

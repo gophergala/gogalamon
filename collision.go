@@ -9,6 +9,13 @@ type Overworld struct {
 	sectors map[sv2]map[Entity]*Colider
 }
 
+func NewOverworld() *Overworld {
+	var o Overworld
+	o.all = make(map[Entity]*Colider)
+	o.sectors = make(map[sv2]map[Entity]*Colider)
+	return &o
+}
+
 func (o *Overworld) set(e Entity, x, y, r float32) {
 	c, ok := o.all[e]
 	if ok {
@@ -54,7 +61,15 @@ func (o *Overworld) query(e Entity, x, y, r float32) []Entity {
 			dy := col.y - y
 			totalR := col.r + r
 			if dx*dx+dy*dy < totalR*totalR {
-				entities = append(entities, entity)
+				alreadyPresent := false
+				for _, other := range entities {
+					if other == entity {
+						alreadyPresent = true
+					}
+				}
+				if !alreadyPresent {
+					entities = append(entities, entity)
+				}
 			}
 		}
 	}

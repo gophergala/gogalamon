@@ -15,7 +15,7 @@ func (t *transform) adjustV(vx, vy float32) {
 	ax := vx - t.vx
 	ay := vy - t.vy
 	dv := float32(math.Sqrt(float64(ax*ax + ay*ay)))
-	if dv2 > t.accel {
+	if dv > t.accel {
 		ax = ax / dv * t.accel
 		ay = ay / dv * t.accel
 	}

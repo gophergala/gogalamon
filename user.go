@@ -34,6 +34,7 @@ func wsHandler(s *websocket.Conn) {
 
 	go u.recieveMessages()
 	go NewPlayerShip(&u)
+	NewUser <- &u
 
 	for {
 		select {
@@ -63,6 +64,40 @@ type User struct {
 	keyUp       map[string]bool
 	chatMessage string
 	Username    string
+
+	viewX float32
+	viewY float32
+}
+
+func (u *User) render(overworld *Overworld, wait chan *User) {
+	type ScreenUpdate struct {
+		ViewX float32
+		ViewY float32
+		Objs  []RenderInfo
+	}
+
+	var s ScreenUpdate
+	s.ViewX = u.viewX
+	s.ViewY = u.viewY
+	entities := overworld.query(nil, u.viewX, u.viewY, 100)
+	s.Objs = make([]RenderInfo, len(entities))
+
+	for i, entity := range entities {
+		s.Objs[i] = entity.RenderInfo()
+	}
+
+	m := UserMessage{
+		"screenUpdate", s,
+	}
+
+	u.connectedMutex.Lock()
+	defer u.connectedMutex.Unlock()
+	if u.connected {
+		wait <- u
+		u.messages <- &m
+	} else {
+		wait <- nil
+	}
 }
 
 type UserMessage struct {
@@ -196,6 +231,8 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 		p.vy = ra*p.vy + a*dy
 		p.x += p.vx
 		p.y += p.vy
+		p.user.viewX = p.x
+		p.user.viewY = p.y
 	}
 
 	overworld.set(p, p.x, p.y, p.radius)
@@ -238,6 +275,12 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 	p.user.connectedMutex.Lock()
 	defer p.user.connectedMutex.Unlock()
 	return p.user.connected
+}
+
+func (p *PlayerShip) RenderInfo() RenderInfo {
+	return RenderInfo{
+		p.x, p.y, 0, "ship",
+	}
 }
 
 func (p *PlayerShip) damage(damage int, teamSource team) {

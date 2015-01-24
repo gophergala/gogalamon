@@ -59,8 +59,8 @@ type User struct {
 }
 
 type UserMessage struct {
-	event string
-	data  interface{}
+	Event string
+	Data  interface{}
 }
 
 func (u *User) send(m *UserMessage) error {
@@ -94,6 +94,7 @@ func (u *User) recieveMessages() {
 			log.Println("Error reading message from client,", err)
 			return
 		}
+		log.Println("User message:", m)
 	}
 }
 

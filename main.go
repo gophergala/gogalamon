@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"net/http"
@@ -8,6 +9,7 @@ import (
 import "golang.org/x/net/websocket"
 
 func main() {
+	log.Println("Starting gogalamon server")
 
 	http.Handle("/", http.FileServer(http.Dir("static/")))
 	http.Handle("/sock/", websocket.Handler(wsHandler))

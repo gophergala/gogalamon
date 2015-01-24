@@ -1,15 +1,36 @@
-
-
 function init() {
+	// Connect to the server's WebSocket
+    var serverSock = new WebSocket("ws://" + window.location.host + "/sock/");
+
+    serverSock.onmessage = function(message) {
+		console.log("Someone sent: ", message);
+		var jsonMessage = JSON.parse(message);
+
+
+		if(jsonMessage.Event == "chatMessage") {
+			// Add the chat message to the output box
+			var chatOutput = document.getElementById("chat_output");
+			chatOutput.innerHTML += jsonMessage.Data.User + ": " + (jsonMessage.Data.message).replace(/[<>]/g, '') + "<br>";
+
+			// Scroll to bottom of textbox
+			chatOutput.scrollTop = chatOutput.scrollHeight;
+		} else if(jsonMessage.Event == "screenUpdate") {
+
+		}
+	};
+
+
+
 	var stage = new createjs.Stage("mainCanvas");
 
 	var circle = new createjs.Shape();
+
+	// To cache an object: DisplayObject.cache()
 
 	circle.graphics.beginFill("DeepSkyBlue").drawCircle(0, 0, 25);
 	circle.x = 400;
 	circle.y = 250;
 	stage.addChild(circle);
-
 
 	stage.update();
 
@@ -95,21 +116,37 @@ function init() {
 	} // end chatInputFocusLost()
 
 
-
+	// Set the framerate for the ticker
 	createjs.Ticker.setFPS(30);
-	//Update stage will render next frame
+	// Update stage will render next frame
     createjs.Ticker.addEventListener("tick", update);
 
 
+    // Text chat input onkeydown event
+	document.getElementById("chat_input").onkeydown = function(e) {
+		// If the enter key is pressed
+		if((e.keyCode || e.charCode) === 13) {
+			// Get the input text
+			var chatInputBox = document.getElementById("chat_input");
 
+			// Send the chat message
+			serverSock.send(JSON.stringify({
+				Event: "chatMessage",
+				Data: chatInputBox.value
+			}));
+			//.send(chatInputBox.value);
 
-    // Connect to the server's WebSocket
-    var serverSock = new WebSocket("ws://" + window.location.host + "/sock/");
+			// Add the chat message to the output box
+			var chatOutput = document.getElementById("chat_output");
+			chatOutput.innerHTML += "You: " + (chatInputBox.value).replace(/[<>]/g, "") + "<br>";
 
-    serverSock.onmessage = function(str) {
-		console.log("Someone sent: ", str);
+			// Scroll to bottom of textbox
+			chatOutput.scrollTop = chatOutput.scrollHeight;
+
+			// Reset the chat input box
+			chatInputBox.value = "";
+		} // end if
 	};
-
 
 
     function update() {

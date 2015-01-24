@@ -153,9 +153,34 @@ function init() {
 
     function update() {
     	// To cache an object: DisplayObject.cache()
-
     	// Remove all the objects on the canvas
     	stage.removeAllChildren();
+
+    	var mainCanvas = document.getElementById("mainCanvas");
+
+    	
+
+
+    	for (var i = mod(viewCenter.x * -0.1) - 512; i < mainCanvas.width; i += 512) {
+    		for (var j = mod(viewCenter.y * -0.1) - 512; j < mainCanvas.height; j += 512) {
+    			var starFieldFar = new createjs.Bitmap("img/starfield_far.png");
+				starFieldFar.x = i;
+				starFieldFar.y = j;
+
+				stage.addChild(starFieldFar);
+    		};
+    	};
+
+    	for (var i = mod(viewCenter.x * -0.9) - 512; i < mainCanvas.width; i += 512) {
+    		for (var j = mod(viewCenter.y * -0.9) - 512; j < mainCanvas.height; j += 512) {
+    			var starFieldNear = new createjs.Bitmap("img/starfield_near.png");
+				starFieldNear.x = i;
+				starFieldNear.y = j;
+
+				stage.addChild(starFieldNear);
+    		};
+    	};
+
 
     	// Create and place each new object we're sent
     	for(var i = 0; i < onScreenObjects.length; i++) {
@@ -165,7 +190,7 @@ function init() {
     		// Create the bitmap object
     		var objectBitmap = new createjs.Bitmap("img/" + currentObject.N + ".png");
 
-    		var mainCanvas = document.getElementById("mainCanvas");
+    		
 
     		objectBitmap.x = Math.round(currentObject.X - viewCenter.x + mainCanvas.width/2);
     		objectBitmap.y = Math.round(currentObject.Y - viewCenter.y + mainCanvas.height/2);
@@ -174,10 +199,18 @@ function init() {
     		stage.addChild(objectBitmap);
     	} // end for
 
-
-
 		stage.update();
 	} // end update()
+
+	function mod(z) {
+		z = z % 512;
+
+		if(z < 0) {
+			z += 512;
+		} // end if
+
+		return z;
+	} // end mod()
 
 } // end init()
 

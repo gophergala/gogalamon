@@ -12,43 +12,20 @@ type Overworld struct {
 func (o *Overworld) set(e Entity, x, y, r float32) {
 	c, ok := o.all[e]
 	if ok {
-		for oldsector := range c.sectors() {
-			delete(sectors[oldsector], e)
+		for _, oldsector := range c.sectors() {
+			delete(o.sectors[oldsector], e)
 		}
 	} else {
-		c := new(Colider)
+		c = new(Colider)
 	}
 	c.x, c.y, c.r = x, y, r
-	for newSector := range c.sectors() {
+	for _, newSector := range c.sectors() {
 		s, ok := o.sectors[newSector]
 		if !ok {
 			s = make(map[Entity]*Colider)
 			o.sectors[newSector] = s
 		}
 		s[e] = c
-	}
-
-	s := sv2{sint(x / 100), sint(y / 100)}
-	if c, ok := o.all[e]; ok {
-		if s != c.s {
-			delete(o.sectors[c.s], e)
-			sector, ok := o.sectors[s]
-			if !ok {
-				sector = make(map[Entity]*Colider)
-				o.sectors[s] = sector
-			}
-			sector[e] = c
-		}
-		c.x, c.y, c.r, c.s = x, y, r, s
-	} else {
-		c := new(Colider)
-		c.x, c.y, c.r, c.s = x, y, r, s
-		sector, ok := o.sectors[s]
-		if !ok {
-			sector = make(map[Entity]*Colider)
-			o.sectors[s] = sector
-		}
-		sector[e] = c
 	}
 }
 
@@ -58,20 +35,27 @@ func (o *Overworld) remove(e Entity) {
 		return
 	}
 	delete(o.all, e)
-	delete(o.sectors[c.s], e)
+	for _, sector := range c.sectors() {
+		delete(o.sectors[sector], e)
+	}
 }
 
 func (o *Overworld) query(x, y, r float32) []Entity {
 	var entities []Entity
-	rs := r * r
 
-	sxmax := sint(x + r/100) ///FIX BUF=G
-	for sx := sint(x - r/100); sx <= sxmax; sx++ {
+	c := Colider{x, y, r}
 
+	for _, sector := range c.sectors() {
+		for entity, col := range o.sectors[sector] {
+			dx := col.x - x
+			dy := col.y - y
+			totalR := col.r + r
+			if dx*dx+dy*dy < totalR*totalR {
+				entities = append(entities, entity)
+			}
+		}
 	}
-
-	s := sv2{sint(x / 100), sint(y / 100)}
-
+	return entities
 }
 
 type Colider struct {

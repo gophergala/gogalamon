@@ -14,6 +14,7 @@ import (
 type User struct {
 	viewX, viewY float32
 	health       float32
+	spawned      bool
 
 	inputMutex  sync.Mutex
 	keys        map[string]bool
@@ -43,7 +44,6 @@ func wsHandler(s *websocket.Conn) {
 	defer u.disconnect()
 
 	NewUser <- &u
-	go NewPlayerShip(&u)
 
 	ticker := time.NewTicker(time.Second * 10)
 	defer ticker.Stop()
@@ -148,6 +148,19 @@ func (u *User) handleInput(r io.Reader) {
 			}
 		case "pong":
 			u.pong = true
+		case "team":
+			if tstr, ok := m["Team"].(string); ok {
+				var t team
+				if tstr == "gophers" {
+					t = TeamGophers
+				} else if tstr == "pythons" {
+					t = TeamPythons
+				}
+				if !u.spawned && t != TeamNone && u.Username != ""{
+					go NewPlayerShip(u, t)
+					u.spawned = true
+				}
+			}
 		default:
 			if event[1:] == " down" {
 				u.keys[event[:1]] = true

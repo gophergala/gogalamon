@@ -173,19 +173,21 @@ type PlayerShip struct {
 	respawning  bool
 }
 
-func NewPlayerShip(user *User) {
+func NewPlayerShip(user *User, t team) {
 	var p PlayerShip
+	p.x = -12000
+	p.y = -12000
 	p.user = user
 	p.accel = 0.8
 	p.radius = 32
 	p.maxHealth = 100
+	p.health = p.maxHealth
 	p.speed = 16
 	p.renderId = <-NextRenderId
 	p.fullReloadTime = framesPerSecond / 5
-
-	///XCHANGE HERE
-	p.t = TeamPythons
-	////////
+	p.t = t
+	p.respawning = true
+	p.respawnTime = 1
 
 	NewEntity <- &p
 }

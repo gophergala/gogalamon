@@ -371,8 +371,8 @@ function init() {
 
 
 
-			console.log("targetRotation: " + targetRotation);
-			console.log("currentRotation: " + currentRotation);
+			//console.log("targetRotation: " + targetRotation);
+			//console.log("currentRotation: " + currentRotation);
 
 
 			createjs.Tween.get(objectBitmap, {override:true}).to({rotation:targetRotation}, 100, createjs.Ease.getPowInOut(2));

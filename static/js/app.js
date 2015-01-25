@@ -18,28 +18,29 @@ function init() {
 			viewCenter.x = jsonMessage.Data.ViewX;
 			viewCenter.y = jsonMessage.Data.ViewY;
 
-			onScreenObjects = jsonMessage.Data.Objs;
+			updateData = jsonMessage.Data;
 
-			update();
-		} else if(jsonMessage.Event == "miniMapUpdate") {
-			updateMiniMap(jsonMessage.Data);
+			update(updateData);
+		} else if(jsonMessage.Event == "ping") {
+			serverSock.send(JSON.stringify({
+				Event   : "pong"
+			}));
 		}
 	};
 
 
 	// Init the stage
 	var stage = new createjs.Stage("mainCanvas");
-	// Set the stage to clear before each render
-	stage.autoClear = true;
+
+	// Init the mini map
+	var miniMap = new createjs.Stage("miniMap");
+
 
 	// Init the location, in map space, of the center (and therefor our player) of our view
 	var viewCenter = {
 		x : null,
 		y : null
 	}
-
-	// Init the array holding all the objects we're going to render on the screen
-	var onScreenObjects = [];
 
 
 	// Keypress listener
@@ -173,17 +174,17 @@ function init() {
 	    return 0;
 	}
 
-    function update() {
+    function update(updateData) {
     	// To cache an object: DisplayObject.cache()
 
     	// Get the mainCanvas
     	var mainCanvas = document.getElementById("mainCanvas");
 
 		var newNames = new Set();
-    	for (var i = 0; i < onScreenObjects.length; i++){
-    		newNames.add(onScreenObjects[i].I)
+    	for (var i = 0; i < updateData.Objs.length; i++){
+    		newNames.add(updateData.Objs[i].I)
     	}
-    	newObjects = onScreenObjects;
+    	newObjects = updateData.Objs;
 
     	removeOldChildren(newNames);
 
@@ -227,9 +228,9 @@ function init() {
 
 
     	// Create and place each new object we're sent
-    	for(var i = 0; i < onScreenObjects.length; i++) {
+    	for(var i = 0; i < updateData.Objs.length; i++) {
     		// Get the object we want to render
-    		var currentObject = onScreenObjects[i];
+    		var currentObject = updateData.Objs[i];
 
     		var objectBitmap;
     		var addChildBool;
@@ -268,6 +269,36 @@ function init() {
 		stage.sortChildren(sortFunction);
 
 		stage.update();
+
+
+		// Start updating mini map stuff
+
+		var miniMapSize = {
+			width  : document.getElementById("miniMap").width,
+			height : document.getElementById("miniMap").height
+		};
+
+		miniMap.removeAllChildren();
+
+		for(var i = 0; i < updateData.Planets.length; i++) {
+			var currentPlanet = updateData.Planets[i];
+
+			var planetBitmap = new createjs.Bitmap("img/" + "planet_python" + ".png");
+
+			planetBitmap.regX = planetBitmap.image.width / 2;
+			planetBitmap.regY = planetBitmap.image.height / 2;
+
+			planetBitmap.x = Math.round((currentPlanet.X/800) + 100);
+			planetBitmap.y = Math.round((currentPlanet.Y/800) + 100);
+
+			planetBitmap.scaleX = 0.01;
+			planetBitmap.scaleY = 0.01;
+
+			miniMap.addChild(planetBitmap);
+
+		}
+
+		miniMap.update()
 	} // end update()
 
 	function removeOldChildren(newNames) {
@@ -293,12 +324,6 @@ function init() {
 
 		return z;
 	} // end mod()
-
-
-	function updateMiniMap(updateData) {
-
-
-	} // end updateMiniMap()
 
 } // end init()
 

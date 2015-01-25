@@ -186,6 +186,7 @@ function init() {
 				serverSock.send(JSON.stringify({
 					Event: "f down"
 				}));
+				createjs.Sound.play("laser0");
 			},
 			"on_keyup"   : function(e) {
 				serverSock.send(JSON.stringify({
@@ -253,7 +254,16 @@ function init() {
 
 
 	// Register sounds
-	//createjs.Sound.registerSound("assets/thunder.mp3", "thunder");
+	createjs.Sound.registerSound("sounds/explosion0.wav", "explosion0");
+	createjs.Sound.registerSound("sounds/explosion1.wav", "explosion1");
+	createjs.Sound.registerSound("sounds/explosion2.wav", "explosion2");
+	createjs.Sound.registerSound("sounds/laser0.wav", "laser0");
+	createjs.Sound.registerSound("sounds/laser1.wav", "laser1");
+	createjs.Sound.registerSound("sounds/laser2.wav", "laser2");
+	createjs.Sound.registerSound("sounds/hit0.wav", "hit0");
+	createjs.Sound.registerSound("sounds/hit1.wav", "hit1");
+	createjs.Sound.registerSound("sounds/hit2.wav", "hit2");
+	createjs.Sound.registerSound("sounds/shipThrust.wav", "shipThrust");
 	// To play sound: createjs.Sound.play("thunder");
 
 

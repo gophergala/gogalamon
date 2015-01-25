@@ -132,6 +132,7 @@ func (t team) String() string {
 }
 
 type EntityDamage interface {
+	Entity
 	damage(damage int, teamSource team)
 }
 

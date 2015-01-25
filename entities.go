@@ -49,7 +49,14 @@ func (b *Bullet) update(overworld *Overworld) (alive bool) {
 	b.applyV()
 	b.timeLeft -= 1
 	overworld.set(b, b.x, b.y, 8)
-	return b.timeLeft > 0
+	hit := false
+	for _, entity := range overworld.query(b, b.x, b.y, 8) {
+		if entity, ok := entity.(EntityDamage); ok {
+			entity.damage(10, 0)
+			hit = true
+		}
+	}
+	return !hit && b.timeLeft > 0
 }
 
 func (b *Bullet) RenderInfo() RenderInfo {
@@ -195,8 +202,10 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 		r := float64(p.rotation-90) / 180 * math.Pi
 		vx := float32(math.Cos(r))*16 + p.vx
 		vy := float32(math.Sin(r))*16 + p.vy
+		x := float32(math.Cos(r))*40 + p.x
+		y := float32(math.Sin(r))*40 + p.y
 		p.reloadTime = 0
-		go NewBullet(p.x, p.y, vx, vy, TeamGophers)
+		go NewBullet(x, y, vx, vy, TeamGophers)
 	}
 
 	return p.user.Connected()

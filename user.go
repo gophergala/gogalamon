@@ -204,7 +204,7 @@ func (u *User) render(overworld *Overworld, planetInfos []PlanetInfo,
 		Ships            []shipInfo
 		PlanetAllegance  string
 		AllegancePercent float32
-		health           float32
+		Health           float32
 	}
 
 	var s ScreenUpdate

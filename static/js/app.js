@@ -427,10 +427,9 @@ function init() {
 
 
 		// Capturing bar stuff
-
+		capture.removeAllChildren();
+		
 		if(updateData.PlanetAllegance != "") {
-			capture.removeAllChildren();
-
 			for(var i = 1; i <= 10; i++) {
 				if(i/10 <= updateData.AllegancePercent) {
 					var captureBar = new createjs.Bitmap("img/bar_" + updateData.PlanetAllegance + ".png");

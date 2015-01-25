@@ -429,8 +429,19 @@ function init() {
 		// Capturing bar stuff
 
 		if(updateData.PlanetAllegance != "") {
-			updateData.AllegancePercent
-		}
+			capture.removeAllChildren();
+
+			for(var i = 1; i <= 10; i++) {
+				if(i/10 <= updateData.AllegancePercent) {
+					var captureBar = new createjs.Bitmap("img/bar_" + updateData.PlanetAllegance + ".png");
+					captureBar.x = (i - 1) * captureBar.image.width;
+
+					capture.addChild(captureBar);
+				} // end if
+			} // end for
+
+			capture.update();
+		} // end if
 
 	} // end update()
 

@@ -174,6 +174,13 @@ function init() {
 	    return 0;
 	}
 
+
+
+
+	// Register sounds
+	//createjs.Sound.registerSound("assets/thunder.mp3", "thunder");
+	// To play sound: createjs.Sound.play("thunder");
+
     function update(updateData) {
     	// To cache an object: DisplayObject.cache()
 

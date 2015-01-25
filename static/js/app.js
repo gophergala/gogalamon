@@ -97,6 +97,8 @@ function init() {
 			serverSock.send(JSON.stringify({
 				Event   : "pong"
 			}));
+		} else if(jsonMessage.Event == "sound") {
+			playSound(jsonMessage.Data);
 		}
 	}; // end onmessage()
 
@@ -263,7 +265,10 @@ function init() {
 	createjs.Sound.registerSound("sounds/hit1.wav", "hit1");
 	createjs.Sound.registerSound("sounds/hit2.wav", "hit2");
 	createjs.Sound.registerSound("sounds/shipThrust.wav", "shipThrust");
-	// To play sound: createjs.Sound.play("thunder");
+
+	function playSound(soundToPlay) {
+		createjs.Sound.play(soundToPlay);
+	} // end playSound()
 
 
 
@@ -348,8 +353,13 @@ function init() {
 			var targetRotation = currentObject.R;
 
 			if(targetRotation < 0) {
-			    targetRotation += 360;
+				targetRotation += 360;
 			}
+
+			if((currentRotation - targetRotation) < 0) {
+				targetRotation -= 180;
+			}
+
 
 			console.log("targetRotation: " + targetRotation);
 			console.log("currentRotation: " + currentRotation);

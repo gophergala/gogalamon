@@ -169,9 +169,9 @@ function init() {
 	var nameCache = {};
 
 	var sortFunction = function(obj1, obj2, options) {
-	     if (obj1.name > obj2.name) { return 1; }
-	     if (obj1.name < obj2.name) { return -1; }
-	     return 0;
+	    if (obj1.name > obj2.name) { return 1; }
+	    if (obj1.name < obj2.name) { return -1; }
+	    return 0;
 	}
 
     function update() {
@@ -253,11 +253,12 @@ function init() {
     			addChildBool = false;
     		} // end if/else
 
-    		console.log(nameCache);
-
     		objectBitmap.x = Math.round(currentObject.X - viewCenter.x + mainCanvas.width/2);
     		objectBitmap.y = Math.round(currentObject.Y - viewCenter.y + mainCanvas.height/2);
-    		objectBitmap.rotation = currentObject.R;
+
+    		if(objectBitmap.rotation != currentObject.R) {
+    			createjs.Tween.get(objectBitmap).to({rotation:currentObject.R}, 100, createjs.Ease.circInOut)
+    		}
 
     		// If the object is already on the stage, don't add it
     		if(addChildBool) {
@@ -266,25 +267,23 @@ function init() {
     	} // end for
 
     	currentNames = newNames;
-    	console.log(stage.numChildren);
-
     	
-		 stage.sortChildren(sortFunction);
+		stage.sortChildren(sortFunction);
 
 		stage.update();
 	} // end update()
 
 	function removeOldChildren(newNames) {
-		for(var i = 0; i < stage.numChildren; i++) {
+		var toRemove = []
+		for(var i = 0; i < stage.getNumChildren(); i++) {
 			var child = stage.children[i];
 			if (!newNames.has(child.name)){
-				if(child.name != -1){
-
-				console.log("Removing child with id" + child.name);
-				}
-				stage.removeChild(child);
+				toRemove.push(child)
 				delete nameCache[child.name]
 			}
+		}
+		for(var i = 0; i < toRemove.length; i++){
+			stage.removeChild(toRemove[i]);
 		}
 	} // end removeOldChildren()
 

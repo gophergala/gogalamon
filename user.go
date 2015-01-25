@@ -210,7 +210,7 @@ func (u *User) render(overworld *Overworld, planetInfos []PlanetInfo,
 	var s ScreenUpdate
 	s.ViewX = u.viewX
 	s.ViewY = u.viewY
-	s.health = u.health
+	s.Health = u.health
 	entities := overworld.query(nil, u.viewX, u.viewY, 1000)
 	s.Planets = planetInfos
 	s.Objs = make([]RenderInfo, len(entities))
@@ -219,7 +219,7 @@ func (u *User) render(overworld *Overworld, planetInfos []PlanetInfo,
 	for i, entity := range entities {
 		s.Objs[i] = entity.RenderInfo()
 		if planet, ok := entity.(*Planet); ok {
-			s.allegancePercent, s.planetAllegance = planet.Allegance()
+			s.AllegancePercent, s.PlanetAllegance = planet.Allegance()
 		}
 	}
 

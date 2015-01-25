@@ -1,17 +1,20 @@
+// Connect to the server's WebSocket
+var serverSock = new WebSocket("ws://" + window.location.host + "/sock/");
+
 function welcome() {
-	// Connect to the server's WebSocket
-    var serverSock = new WebSocket("ws://" + window.location.host + "/sock/");
+
 
 
 	// Keypress listener
 	var listener = new window.keypress.Listener();
 	listener.register_many([
 		{
-		    "keys"       : "j",
-	        "on_keyup"   : function(e) {
-	            dismissElement(document.getElementById("welcome_message"));
-	            listener.destroy();
-	        }
+			"keys"       : "j",
+			"on_keyup"   : function(e) {
+				dismissElement(document.getElementById("welcome_message"));
+				listener.destroy();
+				document.getElementById("captain_name_input").focus();
+			}
 		}
 	]);
 
@@ -48,7 +51,7 @@ function welcome() {
 
 		dismissElement(document.getElementById("choose_team"));
 
-		init(serverSock);
+		init();
 	};
 	// If the player chooses the Python team
 	document.getElementById("choose_pythons").onclick = function () { 
@@ -59,7 +62,7 @@ function welcome() {
 
 		dismissElement(document.getElementById("choose_team"));
 
-		init(serverSock);
+		init();
 	};
 
 
@@ -67,12 +70,12 @@ function welcome() {
 
 
 function dismissElement(elementToDismiss) {
-	elementToDismiss.style.display = 'none';
+	elementToDismiss.classList.add("done");
 } // end dismissElement()
 
 
-function init(serverSock) {
-    serverSock.onmessage = function(message) {
+function init() {
+	serverSock.onmessage = function(message) {
 		var jsonMessage = JSON.parse(message.data);
 
 
@@ -101,13 +104,17 @@ function init(serverSock) {
 	// Init the stage
 	var stage = new createjs.Stage("mainCanvas");
 	// Get the mainCanvas
-    var mainCanvas = document.getElementById("mainCanvas");
+	var mainCanvas = document.getElementById("mainCanvas");
 
 	// Init the mini map
 	var miniMap = new createjs.Stage("miniMap");
 
 	// Init the health bar
 	var health = new createjs.Stage("health");
+
+	// Init capturing planet bar
+	var capture = new createjs.Stage("capture");
+	var captureCanvas = document.getElementById("capture");
 
 
 	// Init the location, in map space, of the center (and therefor our player) of our view
@@ -122,69 +129,69 @@ function init(serverSock) {
 
 	listener.register_many([
 		{
-		    "keys"       : "w",
-		    "on_keydown" : function() {
-	            serverSock.send(JSON.stringify({
+			"keys"       : "w",
+			"on_keydown" : function() {
+				serverSock.send(JSON.stringify({
 					Event: "w down"
 				}));
-	        },
-	        "on_keyup"   : function(e) {
-	            serverSock.send(JSON.stringify({
+			},
+			"on_keyup"   : function(e) {
+				serverSock.send(JSON.stringify({
 					Event: "w up"
 				}));
-	        }
+			}
 		},
 		{
 			"keys"       : "a",
-		    "on_keydown" : function() {
-	            serverSock.send(JSON.stringify({
+			"on_keydown" : function() {
+				serverSock.send(JSON.stringify({
 					Event: "a down"
 				}));
-	        },
-	        "on_keyup"   : function(e) {
-	            serverSock.send(JSON.stringify({
+			},
+			"on_keyup"   : function(e) {
+				serverSock.send(JSON.stringify({
 					Event: "a up"
 				}));
-	        }
+			}
 		},
 		{
 			"keys"       : "s",
-		    "on_keydown" : function() {
-	            serverSock.send(JSON.stringify({
+			"on_keydown" : function() {
+				serverSock.send(JSON.stringify({
 					Event: "s down"
 				}));
-	        },
-	        "on_keyup"   : function(e) {
-	            serverSock.send(JSON.stringify({
+			},
+			"on_keyup"   : function(e) {
+				serverSock.send(JSON.stringify({
 					Event: "s up"
 				}));
-	        }
+			}
 		},
 		{
 			"keys"       : "d",
-		    "on_keydown" : function() {
-	            serverSock.send(JSON.stringify({
+			"on_keydown" : function() {
+				serverSock.send(JSON.stringify({
 					Event: "d down"
 				}));
-	        },
-	        "on_keyup"   : function(e) {
-	            serverSock.send(JSON.stringify({
+			},
+			"on_keyup"   : function(e) {
+				serverSock.send(JSON.stringify({
 					Event: "d up"
 				}));
-	    	}
-	    },
-	    {
+			}
+		},
+		{
 			"keys"       : "j",
-		    "on_keydown" : function() {
-	            serverSock.send(JSON.stringify({
+			"on_keydown" : function() {
+				serverSock.send(JSON.stringify({
 					Event: "f down"
 				}));
-	        },
-	        "on_keyup"   : function(e) {
-	            serverSock.send(JSON.stringify({
+			},
+			"on_keyup"   : function(e) {
+				serverSock.send(JSON.stringify({
 					Event: "f up"
 				}));
-	    	}
+			}
 		}
 	]);
 
@@ -203,7 +210,7 @@ function init(serverSock) {
 	} // end chatInputFocusLost()
 
 
-    // Text chat input onkeydown event
+	// Text chat input onkeydown event
 	document.getElementById("chat_input").onkeydown = function(e) {
 		// If the enter key is pressed
 		if((e.keyCode || e.charCode) === 13) {
@@ -237,9 +244,9 @@ function init(serverSock) {
 	var ships = [];
 
 	var sortFunction = function(obj1, obj2, options) {
-	    if (obj1.name > obj2.name) { return 1; }
-	    if (obj1.name < obj2.name) { return -1; }
-	    return 0;
+		if (obj1.name > obj2.name) { return 1; }
+		if (obj1.name < obj2.name) { return -1; }
+		return 0;
 	}
 
 
@@ -251,95 +258,95 @@ function init(serverSock) {
 
 
 
-    function update(updateData) {
-    	// To cache an object: DisplayObject.cache()
+	function update(updateData) {
+		// To cache an object: DisplayObject.cache()
 
 		var newNames = new Set();
-    	for (var i = 0; i < updateData.Objs.length; i++){
-    		newNames.add(updateData.Objs[i].I)
-    	}
-    	newObjects = updateData.Objs;
+		for (var i = 0; i < updateData.Objs.length; i++){
+			newNames.add(updateData.Objs[i].I)
+		}
+		newObjects = updateData.Objs;
 
-    	removeOldChildren(newNames);
+		removeOldChildren(newNames);
 
 		// Place the far starfield
-    	for (var i = mod(viewCenter.x * -0.1) - 512; i < mainCanvas.width; i += 512) {
-    		for (var j = mod(viewCenter.y * -0.1) - 512; j < mainCanvas.height; j += 512) {
-    			var starFieldFar = new createjs.Bitmap("img/starfield_far.png");
+		for (var i = mod(viewCenter.x * -0.1) - 512; i < mainCanvas.width; i += 512) {
+			for (var j = mod(viewCenter.y * -0.1) - 512; j < mainCanvas.height; j += 512) {
+				var starFieldFar = new createjs.Bitmap("img/starfield_far.png");
 				starFieldFar.x = i;
 				starFieldFar.y = j;
 				starFieldFar.name = -3;
 
 				stage.addChild(starFieldFar);
-    		};
-    	};
+			};
+		};
 
-    	// Place the mid starfield
-    	for (var i = mod(viewCenter.x * -0.4) - 512; i < mainCanvas.width; i += 512) {
-    		for (var j = mod(viewCenter.y * -0.4) - 512; j < mainCanvas.height; j += 512) {
-    			var starFieldNear = new createjs.Bitmap("img/starfield_near.png");
+		// Place the mid starfield
+		for (var i = mod(viewCenter.x * -0.4) - 512; i < mainCanvas.width; i += 512) {
+			for (var j = mod(viewCenter.y * -0.4) - 512; j < mainCanvas.height; j += 512) {
+				var starFieldNear = new createjs.Bitmap("img/starfield_near.png");
 				starFieldNear.x = i;
 				starFieldNear.y = j;
 				starFieldNear.name = -2;
 
 				stage.addChild(starFieldNear);
-    		};
-    	};
+			};
+		};
 
-    	// Place the near starfield
-    	for (var i = mod(viewCenter.x * -0.9) - 512; i < mainCanvas.width; i += 512) {
-    		for (var j = mod(viewCenter.y * -0.9) - 512; j < mainCanvas.height; j += 512) {
-    			var starFieldMid = new createjs.Bitmap("img/starfield_middle.png");
+		// Place the near starfield
+		for (var i = mod(viewCenter.x * -0.9) - 512; i < mainCanvas.width; i += 512) {
+			for (var j = mod(viewCenter.y * -0.9) - 512; j < mainCanvas.height; j += 512) {
+				var starFieldMid = new createjs.Bitmap("img/starfield_middle.png");
 				starFieldMid.x = i;
 				starFieldMid.y = j;
 				starFieldMid.name = -1;
 
 				stage.addChild(starFieldMid);
-    		};
-    	};
+			};
+		};
 
 
 
 
-    	// Create and place each new object we're sent
-    	for(var i = 0; i < updateData.Objs.length; i++) {
-    		// Get the object we want to render
-    		var currentObject = updateData.Objs[i];
+		// Create and place each new object we're sent
+		for(var i = 0; i < updateData.Objs.length; i++) {
+			// Get the object we want to render
+			var currentObject = updateData.Objs[i];
 
-    		var objectBitmap;
-    		var addChildBool;
+			var objectBitmap;
+			var addChildBool;
 
-    		if(!currentNames.has(currentObject.I)) {
-    			// Create the bitmap object
-    			objectBitmap = new createjs.Bitmap("img/" + currentObject.N + ".png");
+			if(!currentNames.has(currentObject.I)) {
+				// Create the bitmap object
+				objectBitmap = new createjs.Bitmap("img/" + currentObject.N + ".png");
 
-    			// Set the bitmap name to its unique id
-    			objectBitmap.name = currentObject.I;
+				// Set the bitmap name to its unique id
+				objectBitmap.name = currentObject.I;
 
-	    		addChildBool = true;
-	    		nameCache[currentObject.I] = objectBitmap;
-    		} else {
-    			objectBitmap = nameCache[currentObject.I];
-    			addChildBool = false;
-    		} // end if/else
+				addChildBool = true;
+				nameCache[currentObject.I] = objectBitmap;
+			} else {
+				objectBitmap = nameCache[currentObject.I];
+				addChildBool = false;
+			} // end if/else
 
-    		// Set the middle of the image
-    		objectBitmap.regX = objectBitmap.image.width / 2;
-    		objectBitmap.regY = objectBitmap.image.height / 2;
+			// Set the middle of the image
+			objectBitmap.regX = objectBitmap.image.width / 2;
+			objectBitmap.regY = objectBitmap.image.height / 2;
 
-    		objectBitmap.x = Math.round(currentObject.X - viewCenter.x + mainCanvas.width/2);
-    		objectBitmap.y = Math.round(currentObject.Y - viewCenter.y + mainCanvas.height/2);
+			objectBitmap.x = Math.round(currentObject.X - viewCenter.x + mainCanvas.width/2);
+			objectBitmap.y = Math.round(currentObject.Y - viewCenter.y + mainCanvas.height/2);
 
-    		createjs.Tween.get(objectBitmap).to({rotation:currentObject.R}, 100, createjs.Ease.circInOut)
+			createjs.Tween.get(objectBitmap).to({rotation:currentObject.R}, 100, createjs.Ease.circInOut)
 
-    		// If the object is already on the stage, don't add it
-    		if(addChildBool) {
-    			stage.addChild(objectBitmap);
-    		} // end if
-    	} // end for
+			// If the object is already on the stage, don't add it
+			if(addChildBool) {
+				stage.addChild(objectBitmap);
+			} // end if
+		} // end for
 
-    	currentNames = newNames;
-    	
+		currentNames = newNames;
+		
 		stage.sortChildren(sortFunction);
 
 		stage.update();
@@ -401,7 +408,7 @@ function init(serverSock) {
 		miniMap.update();
 
 
-
+		// Health bar stuff
 
 		var healthCanvas = document.getElementById("health");
 
@@ -418,6 +425,12 @@ function init(serverSock) {
 
 		health.update();
 
+
+		// Capturing bar stuff
+
+		if(updateData.PlanetAllegance != "") {
+			updateData.AllegancePercent
+		}
 
 	} // end update()
 
@@ -444,10 +457,6 @@ function init(serverSock) {
 
 		return z;
 	} // end mod()
-
-	//document.getElementById("controls").onclick = function(){
-	//	document.getElementById("controls").classList.add("done");
-	//}	
 
 } // end init()
 

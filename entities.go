@@ -48,7 +48,7 @@ type Bullet struct {
 func (b *Bullet) update(overworld *Overworld) (alive bool) {
 	b.applyV()
 	b.timeLeft -= 1
-	overworld.set(b, b.x, b.y, 1)
+	overworld.set(b, b.x, b.y, 8/scaleFactor)
 	return b.timeLeft > 0
 }
 
@@ -77,7 +77,7 @@ func NewPlanet(x, y float32) {
 
 func (p *Planet) update(overworld *Overworld) (alive bool) {
 	if !p.set {
-		overworld.set(p, p.x, p.y, 1)
+		overworld.set(p, p.x, p.y, 512/scaleFactor)
 		p.set = true
 	}
 	p.rotation += 1

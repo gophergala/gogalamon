@@ -118,7 +118,7 @@ func (u *User) send(m *UserMessage) error {
 		return err
 	}
 
-	err = u.s.SetWriteDeadline(time.Now().Add(time.Second * 5))
+	err = u.s.SetWriteDeadline(time.Now().Add(time.Second))
 	if err != nil {
 		return err
 	}
@@ -193,11 +193,11 @@ func NewPlayerShip(user *User) {
 	var p PlayerShip
 	p.user = user
 	p.accel = 0.1
-	p.radius = 0.1
+	p.radius = 32 / scaleFactor
 	p.maxHealth = 100
 	p.speed = 2
 	p.renderId = <-NextRenderId
-	p.fullReloadTime = framesPerSecond / 2
+	p.fullReloadTime = framesPerSecond / 5
 
 	NewEntity <- &p
 }
@@ -275,8 +275,8 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 	p.reloadTime += 1
 	if p.user.keys["f"] && p.fullReloadTime < p.reloadTime {
 		r := float64(p.rotation-90) / 180 * math.Pi
-		vx := float32(math.Cos(r))*1 + p.vx
-		vy := float32(math.Sin(r))*1 + p.vy
+		vx := float32(math.Cos(r))*2 + p.vx
+		vy := float32(math.Sin(r))*2 + p.vy
 		p.reloadTime = 0
 		go NewBullet(p.x, p.y, vx, vy, TeamGophers)
 	}

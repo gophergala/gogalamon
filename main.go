@@ -45,11 +45,12 @@ func mainLoop() {
 	{
 
 		go NewPlanet(0, 0)
-		go NewPlanet(100, 1)
-		go NewPlanet(200, 10)
-		go NewPlanet(300, 100)
-		go NewPlanet(400, 1000)
+		go NewPlanet(200, 0)
 		go NewPlanet(0, 1000)
+		go NewPlanet(9000, 9000)
+		go NewPlanet(-9000, -9000)
+		go NewPlanet(9000, -9000)
+
 	}
 
 	for {

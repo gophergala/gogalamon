@@ -344,7 +344,18 @@ function init() {
 			objectBitmap.x = Math.round(currentObject.X - viewCenter.x + mainCanvas.width/2);
 			objectBitmap.y = Math.round(currentObject.Y - viewCenter.y + mainCanvas.height/2);
 
-			createjs.Tween.get(objectBitmap).to({rotation:currentObject.R}, 100, createjs.Ease.circInOut)
+			var currentRotation = objectBitmap.rotation;
+			var targetRotation = currentObject.R;
+
+			if(targetRotation < 0) {
+			    targetRotation += 360;
+			}
+
+			console.log("targetRotation: " + targetRotation);
+			console.log("currentRotation: " + currentRotation);
+
+
+			createjs.Tween.get(objectBitmap, {override:true}).to({rotation:targetRotation}, 100, createjs.Ease.getPowInOut(2));
 
 			// If the object is already on the stage, don't add it
 			if(addChildBool) {
@@ -446,7 +457,7 @@ function init() {
 					capture.addChild(captureBar);
 				} // end if
 			} // end for
-		}
+		} // end if
 
 		capture.update();
 

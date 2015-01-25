@@ -139,12 +139,15 @@ function init() {
 			// Get the input text
 			var chatInputBox = document.getElementById("chat_input");
 
+			if(chatInputBox.value == "") {
+				return;
+			} // end if
+
 			// Send the chat message
 			serverSock.send(JSON.stringify({
 				Event: "chatMessage",
 				Message : chatInputBox.value
 			}));
-			//.send(chatInputBox.value);
 
 			// Add the chat message to the output box
 			var chatOutput = document.getElementById("chat_output");

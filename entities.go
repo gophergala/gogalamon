@@ -173,7 +173,7 @@ type PlayerShip struct {
 	respawning  bool
 }
 
-func NewPlayerShip(user *User) {
+func NewPlayerShip(user *User, t team) {
 	var p PlayerShip
 	p.user = user
 	p.accel = 0.8
@@ -182,10 +182,7 @@ func NewPlayerShip(user *User) {
 	p.speed = 16
 	p.renderId = <-NextRenderId
 	p.fullReloadTime = framesPerSecond / 5
-
-	///XCHANGE HERE
-	p.t = TeamPythons
-	////////
+	p.t = t
 
 	NewEntity <- &p
 }

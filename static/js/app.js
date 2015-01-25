@@ -103,7 +103,6 @@ function init() {
 
 	// Init the stage
 	var stage = new createjs.Stage("mainCanvas");
-	// Get the mainCanvas
 	var mainCanvas = document.getElementById("mainCanvas");
 
 	// Init the mini map
@@ -111,6 +110,7 @@ function init() {
 
 	// Init the health bar
 	var health = new createjs.Stage("health");
+	var healthCanvas = document.getElementById("health");
 
 	// Init capturing planet bar
 	var capture = new createjs.Stage("capture");
@@ -250,10 +250,19 @@ function init() {
 	}
 
 
-
-
+	// Set volume to half
+	createjs.Sound.setVolume(0.5);
 	// Register sounds
-	//createjs.Sound.registerSound("assets/thunder.mp3", "thunder");
+	createjs.Sound.registerSound("sounds/explosion0.wav", "explosion0");
+	createjs.Sound.registerSound("sounds/explosion1.wav", "explosion1");
+	createjs.Sound.registerSound("sounds/explosion2.wav", "explosion2");
+	createjs.Sound.registerSound("sounds/laser0.wav", "laser0");
+	createjs.Sound.registerSound("sounds/laser1.wav", "laser1");
+	createjs.Sound.registerSound("sounds/laser2.wav", "laser2");
+	createjs.Sound.registerSound("sounds/hit0.wav", "hit0");
+	createjs.Sound.registerSound("sounds/hit1.wav", "hit1");
+	createjs.Sound.registerSound("sounds/hit2.wav", "hit2");
+	createjs.Sound.registerSound("sounds/shipThrust.wav", "shipThrust");
 	// To play sound: createjs.Sound.play("thunder");
 
 
@@ -304,8 +313,6 @@ function init() {
 				stage.addChild(starFieldMid);
 			};
 		};
-
-
 
 
 		// Create and place each new object we're sent
@@ -410,8 +417,6 @@ function init() {
 
 		// Health bar stuff
 
-		var healthCanvas = document.getElementById("health");
-
 		health.removeAllChildren();
 
 		for(var i = 1; i <= 10; i++) {
@@ -427,7 +432,10 @@ function init() {
 
 
 		// Capturing bar stuff
+
 		capture.removeAllChildren();
+
+		//console.log(updateData);
 
 		if(updateData.PlanetAllegance != "") {
 			for(var i = 1; i <= 10; i++) {
@@ -438,9 +446,9 @@ function init() {
 					capture.addChild(captureBar);
 				} // end if
 			} // end for
+		}
 
-			capture.update();
-		} // end if
+		capture.update();
 
 	} // end update()
 

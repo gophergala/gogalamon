@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand"
+	"strconv"
 
 	"math"
 )
@@ -167,6 +168,9 @@ type PlayerShip struct {
 	reloadTime     int
 	fullReloadTime int
 	t              team
+
+	respawnTime int
+	respawning  bool
 }
 
 func NewPlayerShip(user *User) {
@@ -188,13 +192,38 @@ func NewPlayerShip(user *User) {
 
 func (p *PlayerShip) update(overworld *Overworld, planets []*Planet) (alive bool) {
 	if p.health <= 0 {
+		go NewDebris(p.x, p.y, p.rotation)
 		p.health = p.maxHealth
-		p.x = 0
-		p.y = 0
+		p.x = -12000
+		p.y = -12000
 		p.vx = 0
 		p.vy = 0
+		p.respawning = true
+		p.respawnTime = framesPerSecond * 5
 	}
-	p.user.health = float32(p.health) / float32(p.maxHealth)
+	if p.respawning {
+		p.respawnTime--
+		if p.respawnTime <= 0 {
+			p.respawning = false
+			p.x = 0
+			p.y = 0
+			var respawnPlanets []*Planet
+			for _, planet := range planets {
+				if planet.t == p.t {
+					respawnPlanets = append(respawnPlanets, planet)
+				}
+			}
+			if len(respawnPlanets) > 0 {
+				i := int(rand.Int()) % len(respawnPlanets)
+				p.x = respawnPlanets[i].x
+				p.y = respawnPlanets[i].y
+			}
+		}
+
+		p.user.health = 0
+	} else {
+		p.user.health = float32(p.health) / float32(p.maxHealth)
+	}
 
 	var dx float32
 	var dy float32
@@ -214,6 +243,10 @@ func (p *PlayerShip) update(overworld *Overworld, planets []*Planet) (alive bool
 		dx /= 1.41421356237
 		dy /= 1.41421356237
 	}
+	if p.respawning {
+		dx = 0
+		dy = 0
+	}
 	{
 		if dx != 0 || dy != 0 {
 			p.rotation = float32(math.Atan2(float64(dx), float64(-1*dy))) /
@@ -231,8 +264,10 @@ func (p *PlayerShip) update(overworld *Overworld, planets []*Planet) (alive bool
 			p.y *= mfactor
 		}
 
-		p.user.viewX = p.x
-		p.user.viewY = p.y
+		if !p.respawning {
+			p.user.viewX = p.x
+			p.user.viewY = p.y
+		}
 	}
 
 	overworld.set(p, p.x, p.y, p.radius)
@@ -309,12 +344,16 @@ func NewPirateShip(home *Planet) {
 	p.accel = 0.8
 	p.radius = 32
 	p.maxHealth = 100
+	p.health = p.maxHealth
 	p.speed = 16
 	p.renderId = <-NextRenderId
 	p.fullReloadTime = framesPerSecond / 5
 	p.home = home
 	p.targetFindTime = rand.Int() % 30
 	//random time so they don't all do it at once
+	r := rand.Float64() * math.Pi * 2
+	p.x = float32(math.Cos(r)) * 12000
+	p.y = float32(math.Sin(r)) * 12000
 
 	NewEntity <- &p
 }
@@ -323,6 +362,7 @@ func (p *PirateShip) update(overworld *Overworld, planets []*Planet) (alive bool
 	const targetTime = framesPerSecond * 2
 	if p.health <= 0 {
 		p.health = p.maxHealth
+		go NewDebris(p.x, p.y, p.rotation)
 
 		r := rand.Float64() * math.Pi * 2
 		p.x = float32(math.Cos(r)) * 12000
@@ -454,4 +494,43 @@ func (p *PirateShip) team() team {
 
 func (p *PirateShip) shipInfo() shipInfo {
 	return shipInfo{p.x, p.y, TeamPirates.String()}
+}
+
+type Debris struct {
+	transform
+	lifespan int
+	img      string
+	r        float32
+	renderId int
+	rSpeed   float32
+}
+
+func NewDebris(x, y, r float32) {
+	for i := 0; i < 4; i++ {
+		var d Debris
+		d.r = r
+		d.x = x
+		d.y = y
+		d.img = "debris_" + strconv.FormatInt(int64(i), 10)
+		d.lifespan = rand.Int()%(framesPerSecond*3) + framesPerSecond*5
+		d.renderId = <-NextRenderId
+		d.rSpeed = rand.Float32()*10 - 5
+		d.vx = rand.Float32()*10 - 5
+		d.vy = rand.Float32()*10 - 5
+		NewEntity <- &d
+	}
+}
+
+func (d *Debris) update(overworld *Overworld, planets []*Planet) (alive bool) {
+	overworld.set(d, d.x, d.y, 64)
+	d.lifespan--
+	d.r += d.rSpeed
+	d.applyV()
+	return d.lifespan > 0
+}
+
+func (d *Debris) RenderInfo() RenderInfo {
+	return RenderInfo{
+		d.renderId, d.x, d.y, d.r, d.img,
+	}
 }

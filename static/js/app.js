@@ -103,7 +103,6 @@ function init() {
 
 	// Init the stage
 	var stage = new createjs.Stage("mainCanvas");
-	// Get the mainCanvas
 	var mainCanvas = document.getElementById("mainCanvas");
 
 	// Init the mini map
@@ -111,6 +110,7 @@ function init() {
 
 	// Init the health bar
 	var health = new createjs.Stage("health");
+	var healthCanvas = document.getElementById("health");
 
 	// Init capturing planet bar
 	var capture = new createjs.Stage("capture");
@@ -186,7 +186,6 @@ function init() {
 				serverSock.send(JSON.stringify({
 					Event: "f down"
 				}));
-				createjs.Sound.play("laser0");
 			},
 			"on_keyup"   : function(e) {
 				serverSock.send(JSON.stringify({
@@ -251,8 +250,8 @@ function init() {
 	}
 
 
-
-
+	// Set volume to half
+	createjs.Sound.setVolume(0.5);
 	// Register sounds
 	createjs.Sound.registerSound("sounds/explosion0.wav", "explosion0");
 	createjs.Sound.registerSound("sounds/explosion1.wav", "explosion1");
@@ -314,8 +313,6 @@ function init() {
 				stage.addChild(starFieldMid);
 			};
 		};
-
-
 
 
 		// Create and place each new object we're sent
@@ -420,8 +417,6 @@ function init() {
 
 		// Health bar stuff
 
-		var healthCanvas = document.getElementById("health");
-
 		health.removeAllChildren();
 
 		for(var i = 1; i <= 10; i++) {
@@ -437,6 +432,7 @@ function init() {
 
 
 		// Capturing bar stuff
+
 		capture.removeAllChildren();
 
 		if(updateData.PlanetAllegance != "") {

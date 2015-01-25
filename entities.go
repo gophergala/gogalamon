@@ -1,6 +1,10 @@
 package main
 
-import "math"
+import (
+	"math/rand"
+
+	"math"
+)
 
 type transform struct {
 	x, y   float32
@@ -90,6 +94,8 @@ func NewPlanet(x, y float32, img string) {
 
 	p.renderId = <-NextRenderId
 	NewEntity <- &p
+
+	go NewPirateShip(&p)
 }
 
 func (p *Planet) update(overworld *Overworld, planets []*Planet) (alive bool) {
@@ -279,4 +285,173 @@ func (p *PlayerShip) team() team {
 
 func (p *PlayerShip) shipInfo() shipInfo {
 	return shipInfo{p.x, p.y, p.t.String()}
+}
+
+type PirateShip struct {
+	transform
+	radius           float32
+	health           int
+	respawnRemaining int
+	respawning       bool
+	maxHealth        int
+	rotation         float32
+	renderId         int
+	reloadTime       int
+	fullReloadTime   int
+	home             *Planet
+
+	targetFindTime int
+	targeting      *PlayerShip
+}
+
+func NewPirateShip(home *Planet) {
+	var p PirateShip
+	p.accel = 0.8
+	p.radius = 32
+	p.maxHealth = 100
+	p.speed = 16
+	p.renderId = <-NextRenderId
+	p.fullReloadTime = framesPerSecond / 5
+	p.home = home
+	p.targetFindTime = rand.Int() % 30
+	//random time so they don't all do it at once
+
+	NewEntity <- &p
+}
+
+func (p *PirateShip) update(overworld *Overworld, planets []*Planet) (alive bool) {
+	const targetTime = framesPerSecond * 2
+	if p.health <= 0 {
+		p.health = p.maxHealth
+
+		r := rand.Float64() * math.Pi * 2
+		p.x = float32(math.Cos(r)) * 12000
+		p.y = float32(math.Sin(r)) * 12000
+		p.vx = 0
+		p.vy = 0
+		p.respawning = true
+		p.respawnRemaining = framesPerSecond * 60 * 5
+	}
+
+	p.targetFindTime++
+	if p.targetFindTime > targetTime {
+		p.targeting = nil
+		for _, entity := range overworld.query(p, p.x, p.y, 2000) {
+			if player, ok := entity.(*PlayerShip); ok {
+				if p.targeting == nil {
+					p.targeting = player
+				} else {
+					Dt := (p.targeting.x-p.x)*(p.targeting.x-p.x) + (p.targeting.y-p.y)*(p.targeting.y-p.y)
+					Dp := (player.x-p.x)*(player.x-p.x) + (player.y-p.y)*(player.y-p.y)
+					if Dp < Dt {
+						p.targeting = player
+					}
+				}
+			}
+		}
+		p.targetFindTime = 0
+	}
+
+	var dx float32
+	var dy float32
+	tx := p.home.x
+	ty := p.home.y
+	if p.targeting != nil {
+		tx = p.targeting.x
+		ty = p.targeting.y
+	}
+	tx -= p.x
+	ty -= p.y
+	if tx < 5 && tx > -5 {
+		tx = 0
+	}
+	if ty < 5 && ty > -5 {
+		ty = 0
+	}
+
+	if tx < 0 {
+		dx -= p.speed
+	}
+	if tx > 0 {
+		dx += p.speed
+	}
+	if ty < 0 {
+		dy -= p.speed
+	}
+	if ty > 0 {
+		dy += p.speed
+	}
+	if dy*dx != 0 {
+		dx /= 1.41421356237
+		dy /= 1.41421356237
+	}
+
+	if p.respawning {
+		p.respawnRemaining--
+		if p.respawnRemaining <= 0 {
+			p.respawning = false
+		}
+		dx = 0
+		dy = 0
+	}
+
+	{
+		if dx != 0 || dy != 0 {
+			p.rotation = float32(math.Atan2(float64(dx), float64(-1*dy))) /
+				(math.Pi * 2) * 360
+		}
+		p.adjustV(dx, dy)
+		p.applyV()
+	}
+
+	overworld.set(p, p.x, p.y, p.radius)
+
+	//Collision testing code
+	// log.Println("____________")
+	// log.Println(p.x, p.y)
+	//log.Println(overworld.query(nil, p.x, p.y, p.radius))
+	// log.Println(overworld.query(nil, p.x, p.y+5, p.radius))
+
+	p.reloadTime += 1
+	if p.fullReloadTime < p.reloadTime {
+		if p.targeting != nil {
+			r := float64(p.rotation-90) / 180 * math.Pi
+			vx := float32(math.Cos(r))*16 + p.vx
+			vy := float32(math.Sin(r))*16 + p.vy
+			x := float32(math.Cos(r))*25 + p.x
+			y := float32(math.Sin(r))*25 + p.y
+			r += math.Pi / 2
+			dx := float32(math.Cos(r)) * 16
+			dy := float32(math.Sin(r)) * 16
+
+			go NewBullet(x+dx, y+dy, vx, vy, TeamPirates)
+			go NewBullet(x-dx, y-dy, vx, vy, TeamPirates)
+		} else if p.health < p.maxHealth {
+			p.health += 2
+			if p.health > p.maxHealth {
+				p.health = p.maxHealth
+			}
+		}
+		p.reloadTime = 0
+	}
+
+	return true
+}
+
+func (p *PirateShip) RenderInfo() RenderInfo {
+	return RenderInfo{
+		p.renderId, p.x, p.y, p.rotation, "ship_pirate",
+	}
+}
+
+func (p *PirateShip) damage(damage int, teamSource team) {
+	p.health -= damage
+}
+
+func (p *PirateShip) team() team {
+	return TeamPirates
+}
+
+func (p *PirateShip) shipInfo() shipInfo {
+	return shipInfo{p.x, p.y, TeamPirates.String()}
 }

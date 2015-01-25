@@ -312,8 +312,8 @@ function init() {
 		miniShipBitmap.regX = miniShipBitmap.image.width / 2;
 		miniShipBitmap.regY = miniShipBitmap.image.height / 2;
 
-		miniShipBitmap.x = Math.round(viewCenter.x/800 + 100);
-		miniShipBitmap.y = Math.round(viewCenter.y/800 + 100);
+		miniShipBitmap.x = Math.round(viewCenter.x/100 + 100);
+		miniShipBitmap.y = Math.round(viewCenter.y/100 + 100);
 
 		miniShipBitmap.scaleX = 0.1;
 		miniShipBitmap.scaleY = 0.1;

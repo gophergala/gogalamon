@@ -48,7 +48,7 @@ type Bullet struct {
 func (b *Bullet) update(overworld *Overworld) (alive bool) {
 	b.applyV()
 	b.timeLeft -= 1
-	overworld.set(b, b.x, b.y, 8/scaleFactor)
+	overworld.set(b, b.x, b.y, 8)
 	return b.timeLeft > 0
 }
 
@@ -77,7 +77,7 @@ func NewPlanet(x, y float32) {
 
 func (p *Planet) update(overworld *Overworld) (alive bool) {
 	if !p.set {
-		overworld.set(p, p.x, p.y, 512/scaleFactor)
+		overworld.set(p, p.x, p.y, 512)
 		p.set = true
 	}
 	p.rotation += 1
@@ -116,10 +116,10 @@ type PlayerShip struct {
 func NewPlayerShip(user *User) {
 	var p PlayerShip
 	p.user = user
-	p.accel = 0.1
-	p.radius = 32 / scaleFactor
+	p.accel = 0.8
+	p.radius = 32
 	p.maxHealth = 100
-	p.speed = 2
+	p.speed = 16
 	p.renderId = <-NextRenderId
 	p.fullReloadTime = framesPerSecond / 5
 
@@ -183,8 +183,8 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 	p.reloadTime += 1
 	if p.user.Key("f") && p.fullReloadTime < p.reloadTime {
 		r := float64(p.rotation-90) / 180 * math.Pi
-		vx := float32(math.Cos(r))*2 + p.vx
-		vy := float32(math.Sin(r))*2 + p.vy
+		vx := float32(math.Cos(r))*16 + p.vx
+		vy := float32(math.Sin(r))*16 + p.vy
 		p.reloadTime = 0
 		go NewBullet(p.x, p.y, vx, vy, TeamGophers)
 	}

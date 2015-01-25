@@ -11,8 +11,6 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-const scaleFactor = 8
-
 type User struct {
 	inputMutex  sync.Mutex
 	keys        map[string]bool
@@ -204,16 +202,14 @@ func (u *User) render(overworld *Overworld, planetInfos []PlanetInfo, wait chan 
 	}
 
 	var s ScreenUpdate
-	s.ViewX = u.viewX * scaleFactor
-	s.ViewY = u.viewY * scaleFactor
-	entities := overworld.query(nil, u.viewX, u.viewY, 150)
+	s.ViewX = u.viewX
+	s.ViewY = u.viewY
+	entities := overworld.query(nil, u.viewX, u.viewY, 1000)
 	s.Planets = planetInfos
 	s.Objs = make([]RenderInfo, len(entities))
 
 	for i, entity := range entities {
 		s.Objs[i] = entity.RenderInfo()
-		s.Objs[i].X *= scaleFactor
-		s.Objs[i].Y *= scaleFactor
 	}
 
 	m := UserMessage{

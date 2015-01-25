@@ -84,12 +84,13 @@ type Colider struct {
 }
 
 func (c *Colider) sectors() []sv2 {
-	sxmin := sint((c.x - c.r) / 100)
-	sxmax := sint((c.x+c.r)/100) + 1
-	symin := sint((c.y - c.r) / 100)
-	symax := sint((c.y+c.r)/100) + 1
+	const sectorSize = 100
+	sxmin := sint((c.x - c.r) / sectorSize)
+	sxmax := sint((c.x+c.r)/sectorSize) + 1
+	symin := sint((c.y - c.r) / sectorSize)
+	symax := sint((c.y+c.r)/sectorSize) + 1
 
-	result := make([]sv2, (sxmax-sxmin)*(symax-symin))
+	result := make([]sv2, int(sxmax-sxmin)*int(symax-symin))
 	i := 0
 	for j := sxmin; j < sxmax; j++ {
 		for k := symin; k < symax; k++ {

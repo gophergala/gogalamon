@@ -435,6 +435,8 @@ function init() {
 
 		capture.removeAllChildren();
 
+		//console.log(updateData);
+
 		if(updateData.PlanetAllegance != "") {
 			for(var i = 1; i <= 10; i++) {
 				if(i/10 <= updateData.AllegancePercent) {
@@ -444,9 +446,9 @@ function init() {
 					capture.addChild(captureBar);
 				} // end if
 			} // end for
+		}
 
-			capture.update();
-		} // end if
+		capture.update();
 
 	} // end update()
 

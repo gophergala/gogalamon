@@ -245,11 +245,7 @@ func (p *PlayerShip) update(overworld *Overworld, planets []*Planet) (alive bool
 		dx /= 1.41421356237
 		dy /= 1.41421356237
 	}
-	if p.respawning {
-		dx = 0
-		dy = 0
-	}
-	{
+	if !p.respawning {
 		if dx != 0 || dy != 0 {
 			p.rotation = float32(math.Atan2(float64(dx), float64(-1*dy))) /
 				(math.Pi * 2) * 360
@@ -266,10 +262,9 @@ func (p *PlayerShip) update(overworld *Overworld, planets []*Planet) (alive bool
 			p.y *= mfactor
 		}
 
-		if !p.respawning {
-			p.user.viewX = p.x
-			p.user.viewY = p.y
-		}
+		p.user.viewX = p.x
+		p.user.viewY = p.y
+
 	}
 
 	overworld.set(p, p.x, p.y, p.radius)

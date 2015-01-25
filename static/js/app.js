@@ -365,17 +365,26 @@ function init() {
 
 			if(targetRotation < 0) {
 				targetRotation += 360;
-			} else if(targetRotation > 360) {
+			} else if(targetRotation >= 360) {
 				targetRotation -= 360;
 			}
+
+			//if(targetRotation == 0) {
+			//	if(currentRotation <= 360 && currentRotation >= 181) {
+			//		targetRotation = 360;
+			//	}
+			//}
 
 
 
 			//console.log("targetRotation: " + targetRotation);
 			//console.log("currentRotation: " + currentRotation);
 
-
-			createjs.Tween.get(objectBitmap, {override:true}).to({rotation:targetRotation}, 100, createjs.Ease.getPowInOut(2));
+			if(currentObject.N.indexOf("ship") != -1) {
+				createjs.Tween.get(objectBitmap, {override:true}).to({rotation:targetRotation}, 100, createjs.Ease.getPowInOut(2));
+			} else {
+				objectBitmap.rotation = currentObject.R;
+			}
 
 			// If the object is already on the stage, don't add it
 			if(addChildBool) {

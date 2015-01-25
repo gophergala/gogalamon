@@ -156,7 +156,7 @@ func (u *User) handleInput(r io.Reader) {
 				} else if tstr == "pythons" {
 					t = TeamPythons
 				}
-				if !u.spawned && t != TeamNone && u.Username != ""{
+				if !u.spawned && t != TeamNone && u.Username != "" {
 					go NewPlayerShip(u, t)
 					u.spawned = true
 				}
@@ -218,6 +218,7 @@ func (u *User) render(overworld *Overworld, planetInfos []PlanetInfo,
 		PlanetAllegance  string
 		AllegancePercent float32
 		Health           float32
+		EngineSound bool
 	}
 
 	var s ScreenUpdate
@@ -228,22 +229,37 @@ func (u *User) render(overworld *Overworld, planetInfos []PlanetInfo,
 	s.Planets = planetInfos
 	s.Objs = make([]RenderInfo, len(entities))
 	s.Ships = shipInfos
+	s.EngineSound = false
 
 	for i, entity := range entities {
 		s.Objs[i] = entity.RenderInfo()
 		if planet, ok := entity.(*Planet); ok {
 			s.AllegancePercent, s.PlanetAllegance = planet.Allegance()
 		}
-	}
-
-	m := UserMessage{
-		"screenUpdate", s,
+		if sound, ok := entity.(*Sound); ok {
+			m := UserMessage{"sound", sound.name}
+			u.Send(&m)
+		}
+		if player, ok := entity.(*PlayerShip); ok {
+			if player.vx != 0 || player.vy != 0{
+				s.EngineSound = true
+			}
+		}
+		if pirate, ok := entity.(*PirateShip); ok {
+			if pirate.vx != 0 || pirate.vy != 0 {
+				s.EngineSound = true
+			}
+		}
 	}
 
 	if u.Connected() {
 		wait <- u
 	} else {
 		wait <- nil
+	}
+
+	m := UserMessage{
+		"screenUpdate", s,
 	}
 	u.Send(&m)
 }

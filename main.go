@@ -187,3 +187,8 @@ type RenderInfo struct {
 	R float32
 	N string //name
 }
+
+type EntitySound interface {
+	Entity
+	sound() string
+}

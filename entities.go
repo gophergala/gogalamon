@@ -195,6 +195,11 @@ func NewPlayerShip(user *User, t team) {
 func (p *PlayerShip) update(overworld *Overworld, planets []*Planet) (alive bool) {
 	if p.health <= 0 {
 		go NewDebris(p.x, p.y, p.rotation)
+		{
+			x := p.x
+			y := p.y
+			go NewSound(x, y, ExplosionSound())
+		}
 		p.health = p.maxHealth
 		p.x = -12000
 		p.y = -12000
@@ -289,6 +294,11 @@ func (p *PlayerShip) update(overworld *Overworld, planets []*Planet) (alive bool
 
 			go NewBullet(x+dx, y+dy, vx, vy, p.t)
 			go NewBullet(x-dx, y-dy, vx, vy, p.t)
+			if p.t == TeamGophers {
+				go NewSound(x, y, "laser0")
+			} else {
+				go NewSound(x, y, "laser2")
+			}
 		} else if p.health < p.maxHealth {
 			p.health += 2
 			if p.health > p.maxHealth {
@@ -309,6 +319,14 @@ func (p *PlayerShip) RenderInfo() RenderInfo {
 
 func (p *PlayerShip) damage(damage int, teamSource team) {
 	p.health -= damage
+	{
+		x, y := p.x, p.y
+		if p.t == TeamGophers {
+			go NewSound(x, y, "hit1")
+		} else {
+			go NewSound(x, y, "hit2")
+		}
+	}
 }
 
 func (p *PlayerShip) team() team {
@@ -360,6 +378,11 @@ func (p *PirateShip) update(overworld *Overworld, planets []*Planet) (alive bool
 	if p.health <= 0 {
 		p.health = p.maxHealth
 		go NewDebris(p.x, p.y, p.rotation)
+		{
+			x := p.x
+			y := p.y
+			go NewSound(x, y, ExplosionSound())
+		}
 
 		r := rand.Float64() * math.Pi * 2
 		p.x = float32(math.Cos(r)) * 12000
@@ -463,6 +486,7 @@ func (p *PirateShip) update(overworld *Overworld, planets []*Planet) (alive bool
 
 			go NewBullet(x+dx, y+dy, vx, vy, TeamPirates)
 			go NewBullet(x-dx, y-dy, vx, vy, TeamPirates)
+			go NewSound(x, y, "laser1")
 		} else if p.health < p.maxHealth {
 			p.health += 2
 			if p.health > p.maxHealth {
@@ -483,6 +507,10 @@ func (p *PirateShip) RenderInfo() RenderInfo {
 
 func (p *PirateShip) damage(damage int, teamSource team) {
 	p.health -= damage
+	{
+		x, y := p.x, p.y
+		go NewSound(x, y, "hit0")
+	}
 }
 
 func (p *PirateShip) team() team {
@@ -529,5 +557,46 @@ func (d *Debris) update(overworld *Overworld, planets []*Planet) (alive bool) {
 func (d *Debris) RenderInfo() RenderInfo {
 	return RenderInfo{
 		d.renderId, d.x, d.y, d.r, d.img,
+	}
+}
+
+func NewSound(x, y float32, name string) {
+	var s Sound
+	s.x = x
+	s.y = y
+	s.name = name
+	s.alive = true
+
+	NewEntity <- &s
+}
+
+type Sound struct {
+	x, y  float32
+	name  string
+	alive bool
+}
+
+func (s *Sound) update(overworld *Overworld, planets []*Planet) (alive bool) {
+	last := s.alive
+	overworld.set(s, s.x, s.y, 512)
+	s.alive = false
+
+	return last
+}
+
+func (s *Sound) RenderInfo() RenderInfo {
+	return RenderInfo{
+		-10, -12000, -12000, 0, "ball_gopher",
+	}
+}
+
+func ExplosionSound() string {
+	switch rand.Int() % 3 {
+	case 0:
+		return "explosion0"
+	case 1:
+		return "explosion1"
+	default:
+		return "explosion3"
 	}
 }

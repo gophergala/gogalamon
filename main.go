@@ -41,6 +41,8 @@ func mainLoop() {
 	overworld := NewOverworld()
 	ticker := time.Tick(time.Second / framesPerSecond)
 
+	go NewPlanet(0, 0)
+
 	for {
 		select {
 		case <-ticker:

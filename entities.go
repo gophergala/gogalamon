@@ -57,3 +57,37 @@ func (b *Bullet) RenderInfo() RenderInfo {
 		b.renderId, b.x, b.y, 0, "ball_plasma",
 	}
 }
+
+type Planet struct {
+	x, y     float32
+	t        team
+	rotation float32
+	renderId int
+	set      bool
+}
+
+func NewPlanet(x, y float32) {
+	var p Planet
+	p.x = x
+	p.y = y
+
+	p.renderId = <-NextRenderId
+	NewEntity <- &p
+}
+
+func (p *Planet) update(overworld *Overworld) (alive bool) {
+	if !p.set {
+		overworld.set(p, p.x, p.y, 1)
+		p.set = true
+	}
+	p.rotation += 1
+	return true
+}
+
+func (p *Planet) RenderInfo() RenderInfo {
+	img := "planet_python"
+
+	return RenderInfo{
+		p.renderId, p.x, p.y, p.rotation, img,
+	}
+}

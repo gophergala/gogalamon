@@ -6,6 +6,10 @@ canvas {
 	left : 1050px;
 }
 
+#health {
+	top  : 750px;
+}
+
 #chat_box {
 	position: absolute;
 

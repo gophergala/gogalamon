@@ -35,6 +35,9 @@ function init() {
 	// Init the mini map
 	var miniMap = new createjs.Stage("miniMap");
 
+	// Init the health bar
+	var health = new createjs.Stage("health");
+
 
 	// Init the location, in map space, of the center (and therefor our player) of our view
 	var viewCenter = {
@@ -181,6 +184,8 @@ function init() {
 	// Register sounds
 	//createjs.Sound.registerSound("assets/thunder.mp3", "thunder");
 	// To play sound: createjs.Sound.play("thunder");
+
+
 
     function update(updateData) {
     	// To cache an object: DisplayObject.cache()
@@ -332,7 +337,27 @@ function init() {
 
 		miniMap.addChild(miniShipBitmap);
 
-		miniMap.update()
+		miniMap.update();
+
+
+
+
+		var healthCanvas = document.getElementById("health");
+
+		health.removeAllChildren();
+
+		for(var i = 1; i <= 10; i++) {
+			if(i/10 <= updateData.Health) {
+				var healthBar = new createjs.Bitmap("img/bar_health.png");
+				healthBar.x = (i - 1) * healthBar.image.width;
+
+				health.addChild(healthBar);
+			} // end if
+		} // end for
+
+		health.update();
+
+
 	} // end update()
 
 	function removeOldChildren(newNames) {
@@ -359,9 +384,9 @@ function init() {
 		return z;
 	} // end mod()
 
-	document.getElementById("controls").onclick = function(){
-		document.getElementById("controls").classList.add("done");
-	}	
+	//document.getElementById("controls").onclick = function(){
+	//	document.getElementById("controls").classList.add("done");
+	//}	
 
 } // end init()
 

@@ -19,7 +19,7 @@
 		<script src="js/app.js"></script>
 	</head>
 	<body onload="welcome();">
-		<canvas id="mainCanvas" width="1000" height="700"></canvas>
+		<canvas id="mainCanvas" width="900" height="600"></canvas>
 
 		<canvas id="miniMap" width="200" height="200"></canvas>
 
@@ -36,7 +36,7 @@
 		</div>
 
 		<div id="popups">
-			<div id="welcome_message">
+			<div id="welcome_message" class="popup">
 				<h1>Gogalamon</h1>
 				<br>
 				<p>Capture all the planets in the sector!</p>
@@ -46,12 +46,12 @@
 				<p>Press shoot to continue.</p>
 			</div>
 
-			<div id="choose_captain_name">
+			<div id="choose_captain_name" class="popup">
 				<h1>Choose your captain's name!</h1>
 				<input id="captain_name_input" placeholder="Choose something cool... or not"/>
 			</div>
 
-			<div id="choose_team">
+			<div id="choose_team" class="popup">
 				<h1>Choose a team</h1>
 				<button id="choose_gophers">Gophers</button>
 				<button id="choose_pythons">Pythons</button>

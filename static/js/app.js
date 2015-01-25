@@ -280,6 +280,10 @@ function init() {
 
 		miniMap.removeAllChildren();
 
+		var circleGraphic = new createjs.Graphics().beginFill("Black").drawCircle(100, 100, 100);
+		var circle = new createjs.Shape(circleGraphic);
+		miniMap.addChild(circle);
+
 		for(var i = 0; i < updateData.Planets.length; i++) {
 			var currentPlanet = updateData.Planets[i];
 
@@ -288,15 +292,26 @@ function init() {
 			planetBitmap.regX = planetBitmap.image.width / 2;
 			planetBitmap.regY = planetBitmap.image.height / 2;
 
-			planetBitmap.x = Math.round((currentPlanet.X/800) + 100);
-			planetBitmap.y = Math.round((currentPlanet.Y/800) + 100);
+			planetBitmap.x = Math.round(currentPlanet.X/100 + 100);
+			planetBitmap.y = Math.round(currentPlanet.Y/100 + 100);
 
 			planetBitmap.scaleX = 0.01;
 			planetBitmap.scaleY = 0.01;
 
 			miniMap.addChild(planetBitmap);
-
 		}
+
+		var miniShipBitmap = new createjs.Bitmap("img/" + "ship" + ".png");
+		miniShipBitmap.regX = miniShipBitmap.image.width / 2;
+		miniShipBitmap.regY = miniShipBitmap.image.height / 2;
+
+		miniShipBitmap.x = Math.round(viewCenter.x/800 + 100);
+		miniShipBitmap.y = Math.round(viewCenter.y/800 + 100);
+
+		miniShipBitmap.scaleX = 0.1;
+		miniShipBitmap.scaleY = 0.1;
+
+		miniMap.addChild(miniShipBitmap);
 
 		miniMap.update()
 	} // end update()

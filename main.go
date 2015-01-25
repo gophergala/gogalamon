@@ -88,7 +88,10 @@ func mainLoop() {
 					shipInfos = make([]shipInfo, 0, len(ships))
 					shipFrame = 0
 					for ship := range ships {
-						shipInfos = append(shipInfos, ship.shipInfo())
+						info := ship.shipInfo()
+						if info.X*info.X+info.Y*info.Y <= 10000*10000 {
+							shipInfos = append(shipInfos, info)
+						}
 					}
 				}
 				nextUsers := make(map[*User]struct{})

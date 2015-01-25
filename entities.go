@@ -1,6 +1,10 @@
 package main
 
-import "math"
+import (
+	"math/rand"
+
+	"math"
+)
 
 type transform struct {
 	x, y   float32
@@ -285,16 +289,19 @@ func (p *PlayerShip) shipInfo() shipInfo {
 
 type PirateShip struct {
 	transform
-	radius         float32
-	health         int
-	maxHealth      int
-	rotation       float32
-	renderId       int
-	reloadTime     int
-	fullReloadTime int
-	home           *Planet
+	radius           float32
+	health           int
+	respawnRemaining int
+	respawning       bool
+	maxHealth        int
+	rotation         float32
+	renderId         int
+	reloadTime       int
+	fullReloadTime   int
+	home             *Planet
 
-	targeting *PlayerShip
+	targetFindTime int
+	targeting      *PlayerShip
 }
 
 func NewPirateShip(home *Planet) {
@@ -306,17 +313,43 @@ func NewPirateShip(home *Planet) {
 	p.renderId = <-NextRenderId
 	p.fullReloadTime = framesPerSecond / 5
 	p.home = home
+	p.targetFindTime = rand.Int() % 30
+	//random time so they don't all do it at once
 
 	NewEntity <- &p
 }
 
 func (p *PirateShip) update(overworld *Overworld, planets []*Planet) (alive bool) {
+	const targetTime = framesPerSecond * 2
 	if p.health <= 0 {
 		p.health = p.maxHealth
-		p.x = 0
-		p.y = 0
+
+		r := rand.Float64() * math.Pi * 2
+		p.x = float32(math.Cos(r)) * 12000
+		p.y = float32(math.Sin(r)) * 12000
 		p.vx = 0
 		p.vy = 0
+		p.respawning = true
+		p.respawnRemaining = framesPerSecond * 60 * 5
+	}
+
+	p.targetFindTime++
+	if p.targetFindTime > targetTime {
+		p.targeting = nil
+		for _, entity := range overworld.query(p, p.x, p.y, 2000) {
+			if player, ok := entity.(*PlayerShip); ok {
+				if p.targeting == nil {
+					p.targeting = player
+				} else {
+					Dt := (p.targeting.x-p.x)*(p.targeting.x-p.x) + (p.targeting.y-p.y)*(p.targeting.y-p.y)
+					Dp := (player.x-p.x)*(player.x-p.x) + (player.y-p.y)*(player.y-p.y)
+					if Dp < Dt {
+						p.targeting = player
+					}
+				}
+			}
+		}
+		p.targetFindTime = 0
 	}
 
 	var dx float32
@@ -352,6 +385,16 @@ func (p *PirateShip) update(overworld *Overworld, planets []*Planet) (alive bool
 		dx /= 1.41421356237
 		dy /= 1.41421356237
 	}
+
+	if p.respawning {
+		p.respawnRemaining--
+		if p.respawnRemaining <= 0 {
+			p.respawning = false
+		}
+		dx = 0
+		dy = 0
+	}
+
 	{
 		if dx != 0 || dy != 0 {
 			p.rotation = float32(math.Atan2(float64(dx), float64(-1*dy))) /

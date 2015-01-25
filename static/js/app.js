@@ -352,13 +352,23 @@ function init() {
 			var currentRotation = objectBitmap.rotation;
 			var targetRotation = currentObject.R;
 
+			if(currentRotation < 5 && currentRotation > -5) {
+				currentRotation = 0;
+			} else if(currentRotation < 95 && currentRotation > 85) {
+				currentRotation = 90;
+			} else if(currentRotation < 185 && currentRotation > 175) {
+				currentRotation = 180;
+			} else if(currentRotation < 275 && currentRotation > 265) {
+				currentRotation = 270;
+			} 
+
+
 			if(targetRotation < 0) {
 				targetRotation += 360;
+			} else if(targetRotation > 360) {
+				targetRotation -= 360;
 			}
 
-			if((currentRotation - targetRotation) < 0) {
-				targetRotation -= 180;
-			}
 
 
 			console.log("targetRotation: " + targetRotation);

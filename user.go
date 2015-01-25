@@ -194,14 +194,16 @@ func (u *User) View(x, y float32) {
 	u.viewY = y
 }
 
-func (u *User) render(overworld *Overworld, planetInfos []PlanetInfo, wait chan *User) {
+func (u *User) render(overworld *Overworld, planetInfos []PlanetInfo,
+	shipInfos []shipInfo, wait chan *User) {
 	type ScreenUpdate struct {
 		ViewX            float32
 		ViewY            float32
 		Objs             []RenderInfo
 		Planets          []PlanetInfo
-		planetAllegance  string
-		allegancePercent float32
+		Ships            []shipInfo
+		PlanetAllegance  string
+		AllegancePercent float32
 		health           float32
 	}
 
@@ -212,6 +214,7 @@ func (u *User) render(overworld *Overworld, planetInfos []PlanetInfo, wait chan 
 	entities := overworld.query(nil, u.viewX, u.viewY, 1000)
 	s.Planets = planetInfos
 	s.Objs = make([]RenderInfo, len(entities))
+	s.Ships = shipInfos
 
 	for i, entity := range entities {
 		s.Objs[i] = entity.RenderInfo()

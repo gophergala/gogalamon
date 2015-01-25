@@ -40,6 +40,8 @@ func mainLoop() {
 	users := make(map[*User]struct{})
 	overworld := NewOverworld()
 	ticker := time.Tick(time.Second / framesPerSecond)
+	ships := make(map[EntityShip]struct{})
+	shipFrame := 0
 
 	var planets []*Planet
 	{
@@ -62,6 +64,9 @@ func mainLoop() {
 						place++
 					} else {
 						overworld.remove(entity)
+						if ship, ok := entity.(EntityShip); ok {
+							delete(ships, ship)
+						}
 					}
 					i++
 				}
@@ -77,10 +82,19 @@ func mainLoop() {
 				for i := range planetInfos {
 					planetInfos[i] = planets[i].planetInfo()
 				}
+				shipFrame++
+				var shipInfos []shipInfo
+				if shipFrame > framesPerSecond*3 {
+					shipInfos = make([]shipInfo, 0, len(ships))
+					shipFrame = 0
+					for ship := range ships {
+						shipInfos = append(shipInfos, ship.shipInfo())
+					}
+				}
 				nextUsers := make(map[*User]struct{})
 				wait := make(chan *User)
 				for user := range users {
-					go user.render(overworld, planetInfos, wait)
+					go user.render(overworld, planetInfos, shipInfos, wait)
 
 					if msg := user.GetChatMessage(); msg != nil {
 						for other := range users {
@@ -104,6 +118,9 @@ func mainLoop() {
 			entities = append(entities, entity)
 			if planet, ok := entity.(*Planet); ok {
 				planets = append(planets, planet)
+			}
+			if ship, ok := entity.(EntityShip); ok {
+				ships[ship] = struct{}{}
 			}
 		case user := <-NewUser:
 			users[user] = struct{}{}
@@ -145,6 +162,15 @@ func (t team) String() string {
 type EntityDamage interface {
 	Entity
 	damage(damage int, teamSource team)
+}
+
+type EntityShip interface {
+	shipInfo() shipInfo
+}
+
+type shipInfo struct {
+	X, Y float32
+	Team string
 }
 
 type V2 [2]float32

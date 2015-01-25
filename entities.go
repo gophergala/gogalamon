@@ -276,3 +276,7 @@ func (p *PlayerShip) damage(damage int, teamSource team) {
 func (p *PlayerShip) team() team {
 	return p.t
 }
+
+func (p *PlayerShip) shipInfo() shipInfo {
+	return shipInfo{p.x, p.y, p.t.String()}
+}

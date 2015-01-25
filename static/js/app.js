@@ -167,6 +167,7 @@ function init() {
 
 	var currentNames = new Set();
 	var nameCache = {};
+	var ships = [];
 
 	var sortFunction = function(obj1, obj2, options) {
 	    if (obj1.name > obj2.name) { return 1; }
@@ -294,7 +295,7 @@ function init() {
 		for(var i = 0; i < updateData.Planets.length; i++) {
 			var currentPlanet = updateData.Planets[i];
 
-			var planetBitmap = new createjs.Bitmap("img/" + "planet_python" + ".png");
+			var planetBitmap = new createjs.Bitmap("img/planet_icon_" + currentPlanet.Team + ".png");
 
 			planetBitmap.regX = planetBitmap.image.width / 2;
 			planetBitmap.regY = planetBitmap.image.height / 2;
@@ -302,10 +303,24 @@ function init() {
 			planetBitmap.x = Math.round(currentPlanet.X/100 + 100);
 			planetBitmap.y = Math.round(currentPlanet.Y/100 + 100);
 
-			planetBitmap.scaleX = 0.01;
-			planetBitmap.scaleY = 0.01;
-
 			miniMap.addChild(planetBitmap);
+		}
+
+		if(updateData.Ships != null){
+			ships = updateData.Ships;
+		}
+
+		for(var i = 0; i < ships.length; i++){
+			var currentship = ships[i];
+
+			var shipBitmap = new createjs.Bitmap("img/blip_" + currentship.Team + ".png");
+			shipBitmap.regX = shipBitmap.image.width / 2;
+			shipBitmap.regY = shipBitmap.image.height / 2;
+
+			shipBitmap.x = Math.round(currentship.X/100 + 100);
+			shipBitmap.y = Math.round(currentship.Y/100 + 100);
+
+			miniMap.addChild(shipBitmap);
 		}
 
 		var miniShipBitmap = new createjs.Bitmap("img/marker.png");

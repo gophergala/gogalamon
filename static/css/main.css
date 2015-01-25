@@ -6,10 +6,15 @@ canvas {
 	border-color: black;
 }
 
+#miniMap {
+	left : 1050px;
+}
+
 #chat_box {
 	position: absolute;
 
-	left: 1050px;
+	left : 1050px;
+	top  : 250px;
 
 	width  : 200px;
 	height : 400px;

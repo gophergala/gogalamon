@@ -21,7 +21,9 @@ function init() {
 			onScreenObjects = jsonMessage.Data.Objs;
 
 			update();
-		} // end if/else if
+		} else if(jsonMessage.Event == "miniMapUpdate") {
+			updateMiniMap(jsonMessage.Data);
+		}
 	};
 
 
@@ -124,12 +126,6 @@ function init() {
 	function chatInputFocusLost() {
 		listener.listen();
 	} // end chatInputFocusLost()
-
-
-	// Set the framerate for the ticker
-	//createjs.Ticker.setFPS(30);
-	// Update stage will render next frame
-    //createjs.Ticker.addEventListener("tick", update);
 
 
     // Text chat input onkeydown event
@@ -245,10 +241,6 @@ function init() {
     			// Set the bitmap name to its unique id
     			objectBitmap.name = currentObject.I;
 
-    			// Set the middle of the image (using the ship's size)
-	    		objectBitmap.regX = objectBitmap.image.width / 2;
-	    		objectBitmap.regY = objectBitmap.image.height / 2;
-
 	    		addChildBool = true;
 	    		nameCache[currentObject.I] = objectBitmap;
     		} else {
@@ -256,12 +248,14 @@ function init() {
     			addChildBool = false;
     		} // end if/else
 
+    		// Set the middle of the image
+    		objectBitmap.regX = objectBitmap.image.width / 2;
+    		objectBitmap.regY = objectBitmap.image.height / 2;
+
     		objectBitmap.x = Math.round(currentObject.X - viewCenter.x + mainCanvas.width/2);
     		objectBitmap.y = Math.round(currentObject.Y - viewCenter.y + mainCanvas.height/2);
 
-    		if(objectBitmap.rotation != currentObject.R) {
-    			createjs.Tween.get(objectBitmap).to({rotation:currentObject.R}, 100, createjs.Ease.circInOut)
-    		}
+    		createjs.Tween.get(objectBitmap).to({rotation:currentObject.R}, 100, createjs.Ease.circInOut)
 
     		// If the object is already on the stage, don't add it
     		if(addChildBool) {
@@ -299,6 +293,12 @@ function init() {
 
 		return z;
 	} // end mod()
+
+
+	function updateMiniMap(updateData) {
+
+
+	} // end updateMiniMap()
 
 } // end init()
 

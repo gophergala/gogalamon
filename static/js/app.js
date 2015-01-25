@@ -1,9 +1,78 @@
-function init() {
+function welcome() {
 	// Connect to the server's WebSocket
     var serverSock = new WebSocket("ws://" + window.location.host + "/sock/");
 
+
+	// Keypress listener
+	var listener = new window.keypress.Listener();
+	listener.register_many([
+		{
+		    "keys"       : "j",
+	        "on_keyup"   : function(e) {
+	            dismissElement(document.getElementById("welcome_message"));
+	            listener.destroy();
+	        }
+		}
+	]);
+
+	var captainName;
+	// Captain name input onkeydown event
+	document.getElementById("captain_name_input").onkeydown = function(e) {
+		// If the enter key is pressed
+		if((e.keyCode || e.charCode) === 13) {
+			// Get the input text
+			var chatInputBox = document.getElementById("captain_name_input");
+
+			if(chatInputBox.value == "") {
+				return;
+			} // end if
+
+			captainName = chatInputBox.value;
+
+			// Send the captain name
+			serverSock.send(JSON.stringify({
+				Event   : "username",
+				User    : captainName
+			}));
+
+			dismissElement(document.getElementById("choose_captain_name"));
+		} // end if
+	};
+
+	// If the player chooses the Gopher team
+	document.getElementById("choose_gophers").onclick = function () { 
+		serverSock.send(JSON.stringify({
+			Event   : "team",
+			Team    : "gophers"
+		}));
+
+		dismissElement(document.getElementById("choose_team"));
+
+		init(serverSock);
+	};
+	// If the player chooses the Python team
+	document.getElementById("choose_pythons").onclick = function () { 
+		serverSock.send(JSON.stringify({
+			Event   : "team",
+			Team    : "pythons"
+		}));
+
+		dismissElement(document.getElementById("choose_team"));
+
+		init(serverSock);
+	};
+
+
+} // end welcome()
+
+
+function dismissElement(elementToDismiss) {
+	elementToDismiss.style.display = 'none';
+} // end dismissElement()
+
+
+function init(serverSock) {
     serverSock.onmessage = function(message) {
-		
 		var jsonMessage = JSON.parse(message.data);
 
 
@@ -26,14 +95,19 @@ function init() {
 				Event   : "pong"
 			}));
 		}
-	};
+	}; // end onmessage()
 
 
 	// Init the stage
 	var stage = new createjs.Stage("mainCanvas");
+	// Get the mainCanvas
+    var mainCanvas = document.getElementById("mainCanvas");
 
 	// Init the mini map
 	var miniMap = new createjs.Stage("miniMap");
+
+	// Init the health bar
+	var health = new createjs.Stage("health");
 
 
 	// Init the location, in map space, of the center (and therefor our player) of our view
@@ -100,7 +174,7 @@ function init() {
 	    	}
 	    },
 	    {
-			"keys"       : "f",
+			"keys"       : "j",
 		    "on_keydown" : function() {
 	            serverSock.send(JSON.stringify({
 					Event: "f down"
@@ -158,13 +232,6 @@ function init() {
 		} // end if
 	};
 
-	// Sweet jesus the normal prompts are ugly
-	var playerName = prompt("Please enter your player name");
-	serverSock.send(JSON.stringify({
-		Event   : "username",
-		User    : playerName
-	}));
-
 	var currentNames = new Set();
 	var nameCache = {};
 	var ships = [];
@@ -182,11 +249,10 @@ function init() {
 	//createjs.Sound.registerSound("assets/thunder.mp3", "thunder");
 	// To play sound: createjs.Sound.play("thunder");
 
+
+
     function update(updateData) {
     	// To cache an object: DisplayObject.cache()
-
-    	// Get the mainCanvas
-    	var mainCanvas = document.getElementById("mainCanvas");
 
 		var newNames = new Set();
     	for (var i = 0; i < updateData.Objs.length; i++){
@@ -332,7 +398,27 @@ function init() {
 
 		miniMap.addChild(miniShipBitmap);
 
-		miniMap.update()
+		miniMap.update();
+
+
+
+
+		var healthCanvas = document.getElementById("health");
+
+		health.removeAllChildren();
+
+		for(var i = 1; i <= 10; i++) {
+			if(i/10 <= updateData.Health) {
+				var healthBar = new createjs.Bitmap("img/bar_health.png");
+				healthBar.x = (i - 1) * healthBar.image.width;
+
+				health.addChild(healthBar);
+			} // end if
+		} // end for
+
+		health.update();
+
+
 	} // end update()
 
 	function removeOldChildren(newNames) {
@@ -359,9 +445,9 @@ function init() {
 		return z;
 	} // end mod()
 
-	document.getElementById("controls").onclick = function(){
-		document.getElementById("controls").classList.add("done");
-	}	
+	//document.getElementById("controls").onclick = function(){
+	//	document.getElementById("controls").classList.add("done");
+	//}	
 
 } // end init()
 

@@ -308,15 +308,12 @@ function init() {
 			miniMap.addChild(planetBitmap);
 		}
 
-		var miniShipBitmap = new createjs.Bitmap("img/" + "ship" + ".png");
+		var miniShipBitmap = new createjs.Bitmap("img/marker.png");
 		miniShipBitmap.regX = miniShipBitmap.image.width / 2;
 		miniShipBitmap.regY = miniShipBitmap.image.height / 2;
 
 		miniShipBitmap.x = Math.round(viewCenter.x/100 + 100);
 		miniShipBitmap.y = Math.round(viewCenter.y/100 + 100);
-
-		miniShipBitmap.scaleX = 0.1;
-		miniShipBitmap.scaleY = 0.1;
 
 		miniMap.addChild(miniShipBitmap);
 
@@ -346,6 +343,10 @@ function init() {
 
 		return z;
 	} // end mod()
+
+	document.getElementById("controls").onclick = function(){
+		document.getElementById("controls").classList.add("done");
+	}	
 
 } // end init()
 

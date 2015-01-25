@@ -87,7 +87,7 @@ func (p *Planet) update(overworld *Overworld) (alive bool) {
 		overworld.set(p, p.x, p.y, 512)
 		p.set = true
 	}
-	p.rotation += 1
+	p.rotation += 0.03
 	return true
 }
 

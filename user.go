@@ -70,19 +70,21 @@ type User struct {
 	viewY float32
 }
 
-const scaleFactor = 16
+const scaleFactor = 8
 
-func (u *User) render(overworld *Overworld, wait chan *User) {
+func (u *User) render(overworld *Overworld, planetInfos []PlanetInfo, wait chan *User) {
 	type ScreenUpdate struct {
-		ViewX float32
-		ViewY float32
-		Objs  []RenderInfo
+		ViewX   float32
+		ViewY   float32
+		Objs    []RenderInfo
+		Planets []PlanetInfo
 	}
 
 	var s ScreenUpdate
 	s.ViewX = u.viewX * scaleFactor
 	s.ViewY = u.viewY * scaleFactor
-	entities := overworld.query(nil, u.viewX, u.viewY, 100)
+	entities := overworld.query(nil, u.viewX, u.viewY, 150)
+	s.Planets = planetInfos
 	s.Objs = make([]RenderInfo, len(entities))
 
 	for i, entity := range entities {
@@ -190,10 +192,10 @@ type PlayerShip struct {
 func NewPlayerShip(user *User) {
 	var p PlayerShip
 	p.user = user
-	p.accel = 0.05
+	p.accel = 0.1
 	p.radius = 0.1
 	p.maxHealth = 100
-	p.speed = 1
+	p.speed = 2
 	p.renderId = <-NextRenderId
 	p.fullReloadTime = framesPerSecond / 2
 

@@ -41,7 +41,16 @@ func mainLoop() {
 	overworld := NewOverworld()
 	ticker := time.Tick(time.Second / framesPerSecond)
 
-	go NewPlanet(0, 0)
+	var planets []*Planet
+	{
+
+		go NewPlanet(0, 0)
+		go NewPlanet(100, 1)
+		go NewPlanet(200, 10)
+		go NewPlanet(300, 100)
+		go NewPlanet(400, 1000)
+		go NewPlanet(0, 1000)
+	}
 
 	for {
 		select {
@@ -66,10 +75,14 @@ func mainLoop() {
 				entities = entities[:lastPlace]
 			}
 			{
+				planetInfos := make([]PlanetInfo, len(planets))
+				for i := range planetInfos {
+					planetInfos[i] = planets[i].planetInfo()
+				}
 				nextUsers := make(map[*User]struct{})
 				wait := make(chan *User)
 				for user := range users {
-					go user.render(overworld, wait)
+					go user.render(overworld, planetInfos, wait)
 				}
 				for i := 0; i < len(users); i++ {
 					user := <-wait
@@ -81,6 +94,9 @@ func mainLoop() {
 			}
 		case entity := <-NewEntity:
 			entities = append(entities, entity)
+			if planet, ok := entity.(*Planet); ok {
+				planets = append(planets, planet)
+			}
 		case user := <-NewUser:
 			users[user] = struct{}{}
 		}
@@ -103,6 +119,18 @@ const (
 	TeamGophers
 	TeamPythons
 )
+
+func (t team) String() string {
+	switch t {
+	case TeamPirates:
+		return "Pirate"
+	case TeamGophers:
+		return "Gopher"
+	case TeamPythons:
+		return "Python"
+	}
+	return "Pirate"
+}
 
 type EntityDamage interface {
 	damage(damage int, teamSource team)

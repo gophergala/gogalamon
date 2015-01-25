@@ -91,3 +91,12 @@ func (p *Planet) RenderInfo() RenderInfo {
 		p.renderId, p.x, p.y, p.rotation, img,
 	}
 }
+
+func (p *Planet) planetInfo() PlanetInfo {
+	return PlanetInfo{p.x, p.y, p.t.String()}
+}
+
+type PlanetInfo struct {
+	X, Y float32
+	Team string
+}

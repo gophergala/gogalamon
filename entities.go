@@ -160,6 +160,16 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 		}
 		p.adjustV(dx, dy)
 		p.applyV()
+
+		const userLimit = 10000
+		distance := p.x*p.x + p.y*p.y
+
+		if distance > userLimit*userLimit {
+			mfactor := userLimit / float32(math.Sqrt(float64(distance)))
+			p.x *= mfactor
+			p.y *= mfactor
+		}
+
 		p.user.viewX = p.x
 		p.user.viewY = p.y
 	}

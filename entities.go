@@ -76,15 +76,17 @@ type Planet struct {
 	set          bool
 	allegance    int
 	maxAllegance int
+	img          string
 }
 
-func NewPlanet(x, y float32) {
+func NewPlanet(x, y float32, img string) {
 	var p Planet
 	p.x = x
 	p.y = y
 	p.allegance = framesPerSecond * 10
 	p.maxAllegance = p.allegance
 	p.t = TeamPirates
+	p.img = img
 
 	p.renderId = <-NextRenderId
 	NewEntity <- &p
@@ -130,10 +132,8 @@ func (p *Planet) update(overworld *Overworld, planets []*Planet) (alive bool) {
 }
 
 func (p *Planet) RenderInfo() RenderInfo {
-	img := "planet_python"
-
 	return RenderInfo{
-		p.renderId, p.x, p.y, p.rotation, img,
+		p.renderId, p.x, p.y, p.rotation, p.img,
 	}
 }
 
@@ -141,8 +141,8 @@ func (p *Planet) planetInfo() PlanetInfo {
 	return PlanetInfo{p.x, p.y, p.t.String()}
 }
 
-func (p *Planet) Allegance() (float32, team) {
-	return float32(p.allegance) / float32(p.maxAllegance), p.t
+func (p *Planet) Allegance() (float32, string) {
+	return float32(p.allegance) / float32(p.maxAllegance), p.t.String()
 }
 
 type PlanetInfo struct {
@@ -188,6 +188,7 @@ func (p *PlayerShip) update(overworld *Overworld, planets []*Planet) (alive bool
 		p.vx = 0
 		p.vy = 0
 	}
+	p.user.health = float32(p.health) / float32(p.maxHealth)
 
 	var dx float32
 	var dy float32
@@ -237,18 +238,26 @@ func (p *PlayerShip) update(overworld *Overworld, planets []*Planet) (alive bool
 	// log.Println(overworld.query(nil, p.x, p.y+5, p.radius))
 
 	p.reloadTime += 1
-	if p.user.Key("f") && p.fullReloadTime < p.reloadTime {
-		r := float64(p.rotation-90) / 180 * math.Pi
-		vx := float32(math.Cos(r))*16 + p.vx
-		vy := float32(math.Sin(r))*16 + p.vy
-		x := float32(math.Cos(r))*25 + p.x
-		y := float32(math.Sin(r))*25 + p.y
-		r += math.Pi / 2
-		dx := float32(math.Cos(r)) * 16
-		dy := float32(math.Sin(r)) * 16
+	if p.fullReloadTime < p.reloadTime {
+		if p.user.Key("f") {
+			r := float64(p.rotation-90) / 180 * math.Pi
+			vx := float32(math.Cos(r))*16 + p.vx
+			vy := float32(math.Sin(r))*16 + p.vy
+			x := float32(math.Cos(r))*25 + p.x
+			y := float32(math.Sin(r))*25 + p.y
+			r += math.Pi / 2
+			dx := float32(math.Cos(r)) * 16
+			dy := float32(math.Sin(r)) * 16
+
+			go NewBullet(x+dx, y+dy, vx, vy, p.t)
+			go NewBullet(x-dx, y-dy, vx, vy, p.t)
+		} else if p.health < p.maxHealth {
+			p.health += 2
+			if p.health > p.maxHealth {
+				p.health = p.maxHealth
+			}
+		}
 		p.reloadTime = 0
-		go NewBullet(x+dx, y+dy, vx, vy, p.t)
-		go NewBullet(x-dx, y-dy, vx, vy, p.t)
 	}
 
 	return p.user.Connected()

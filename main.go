@@ -43,11 +43,11 @@ func mainLoop() {
 
 	var planets []*Planet
 	{
-		go NewPlanet(0, 2000)
-		go NewPlanet(0, 9000)
-		go NewPlanet(0, -9000)
-		go NewPlanet(9000, 0)
-		go NewPlanet(-9000, 0)
+		go NewPlanet(0, 2000, "planet_python")
+		go NewPlanet(0, 9000, "planet_python")
+		go NewPlanet(0, -9000, "planet_python")
+		go NewPlanet(9000, 0, "planet_python")
+		go NewPlanet(-9000, 0, "planet_python")
 	}
 
 	for {

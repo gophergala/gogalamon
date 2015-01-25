@@ -1,24 +1,25 @@
 package main
 
 import (
-	"time"
 	"bytes"
 	"encoding/json"
 	"io"
 	"log"
 	"sync"
+	"time"
 
 	"golang.org/x/net/websocket"
 )
 
 type User struct {
+	viewX, viewY float32
+	health       float32
+
 	inputMutex  sync.Mutex
 	keys        map[string]bool
 	chatMessage string
 	Username    string
 	pong        bool
-
-	viewX, viewY float32
 
 	connState sync.RWMutex
 	connected bool
@@ -62,7 +63,7 @@ func wsHandler(s *websocket.Conn) {
 }
 
 func (u *User) handleOutpit(w io.Writer) {
-	buf := bytes.NewBuffer(nil )
+	buf := bytes.NewBuffer(nil)
 	encoder := json.NewEncoder(buf)
 
 	var err error
@@ -195,21 +196,28 @@ func (u *User) View(x, y float32) {
 
 func (u *User) render(overworld *Overworld, planetInfos []PlanetInfo, wait chan *User) {
 	type ScreenUpdate struct {
-		ViewX   float32
-		ViewY   float32
-		Objs    []RenderInfo
-		Planets []PlanetInfo
+		ViewX            float32
+		ViewY            float32
+		Objs             []RenderInfo
+		Planets          []PlanetInfo
+		planetAllegance  string
+		allegancePercent float32
+		health           float32
 	}
 
 	var s ScreenUpdate
 	s.ViewX = u.viewX
 	s.ViewY = u.viewY
+	s.health = u.health
 	entities := overworld.query(nil, u.viewX, u.viewY, 1000)
 	s.Planets = planetInfos
 	s.Objs = make([]RenderInfo, len(entities))
 
 	for i, entity := range entities {
 		s.Objs[i] = entity.RenderInfo()
+		if planet, ok := entity.(*Planet); ok {
+			s.allegancePercent, s.planetAllegance = planet.Allegance()
+		}
 	}
 
 	m := UserMessage{
@@ -223,4 +231,3 @@ func (u *User) render(overworld *Overworld, planetInfos []PlanetInfo, wait chan 
 	}
 	u.Send(&m)
 }
-

@@ -43,7 +43,6 @@ func mainLoop() {
 
 	var planets []*Planet
 	{
-		go NewPlanet(0, 0)
 		go NewPlanet(0, 2000)
 		go NewPlanet(0, 9000)
 		go NewPlanet(0, -9000)
@@ -58,7 +57,7 @@ func mainLoop() {
 				var i, place int
 				for i < len(entities) {
 					entity := entities[i]
-					if entity.update(overworld) {
+					if entity.update(overworld, planets) {
 						entities[place] = entity
 						place++
 					} else {
@@ -82,6 +81,14 @@ func mainLoop() {
 				wait := make(chan *User)
 				for user := range users {
 					go user.render(overworld, planetInfos, wait)
+
+					if msg := user.GetChatMessage(); msg != nil {
+						for other := range users {
+							if other != user {
+								other.Send(msg)
+							}
+						}
+					}
 				}
 				for i := 0; i < len(users); i++ {
 					user := <-wait
@@ -90,6 +97,8 @@ func mainLoop() {
 					}
 				}
 				users = nextUsers
+			}
+			{
 			}
 		case entity := <-NewEntity:
 			entities = append(entities, entity)
@@ -103,7 +112,7 @@ func mainLoop() {
 }
 
 type Entity interface {
-	update(overworld *Overworld) (alive bool)
+	update(overworld *Overworld, planets []*Planet) (alive bool)
 	RenderInfo() RenderInfo
 }
 
@@ -114,21 +123,23 @@ type EntityTeam interface {
 }
 
 const (
-	TeamPirates = team(iota)
+	TeamNone = team(iota)
+	TeamPirates
 	TeamGophers
 	TeamPythons
+	TeamMax
 )
 
 func (t team) String() string {
 	switch t {
 	case TeamPirates:
-		return "Pirate"
+		return "pirate"
 	case TeamGophers:
-		return "Gopher"
+		return "gopher"
 	case TeamPythons:
-		return "Python"
+		return "python"
 	}
-	return "Pirate"
+	return "pirate"
 }
 
 type EntityDamage interface {

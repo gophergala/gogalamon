@@ -33,6 +33,7 @@ func NewBullet(x, y, vx, vy float32, t team) {
 	b.vx = vx
 	b.vy = vy
 	b.timeLeft = framesPerSecond * 3
+	b.t = t
 
 	b.renderId = <-NextRenderId
 	NewEntity <- &b
@@ -45,15 +46,17 @@ type Bullet struct {
 	timeLeft int
 }
 
-func (b *Bullet) update(overworld *Overworld) (alive bool) {
+func (b *Bullet) update(overworld *Overworld, planets []*Planet) (alive bool) {
 	b.applyV()
 	b.timeLeft -= 1
 	overworld.set(b, b.x, b.y, 8)
 	hit := false
 	for _, entity := range overworld.query(b, b.x, b.y, 8) {
-		if entity, ok := entity.(EntityDamage); ok {
-			entity.damage(10, 0)
-			hit = true
+		if entity, ok := entity.(EntityTeam); ok && entity.team() != b.t {
+			if entity, ok := entity.(EntityDamage); ok {
+				entity.damage(10, 0)
+				hit = true
+			}
 		}
 	}
 	return !hit && b.timeLeft > 0
@@ -61,32 +64,67 @@ func (b *Bullet) update(overworld *Overworld) (alive bool) {
 
 func (b *Bullet) RenderInfo() RenderInfo {
 	return RenderInfo{
-		b.renderId, b.x, b.y, 0, "ball_plasma",
+		b.renderId, b.x, b.y, 0, "ball_" + b.t.String(),
 	}
 }
 
 type Planet struct {
-	x, y     float32
-	t        team
-	rotation float32
-	renderId int
-	set      bool
+	x, y         float32
+	t            team
+	rotation     float32
+	renderId     int
+	set          bool
+	allegance    int
+	maxAllegance int
 }
 
 func NewPlanet(x, y float32) {
 	var p Planet
 	p.x = x
 	p.y = y
+	p.allegance = framesPerSecond * 10
+	p.maxAllegance = p.allegance
+	p.t = TeamPirates
 
 	p.renderId = <-NextRenderId
 	NewEntity <- &p
 }
 
-func (p *Planet) update(overworld *Overworld) (alive bool) {
+func (p *Planet) update(overworld *Overworld, planets []*Planet) (alive bool) {
 	if !p.set {
 		overworld.set(p, p.x, p.y, 512)
 		p.set = true
 	}
+
+	nextTeam := TeamMax
+	for _, entity := range overworld.query(p, p.x, p.y, 512) {
+		if entity, ok := entity.(EntityTeam); ok {
+			t := entity.team()
+			if nextTeam != t {
+				if nextTeam == TeamMax {
+					nextTeam = t
+				} else {
+					nextTeam = TeamNone
+				}
+			}
+		}
+	}
+
+	if nextTeam != TeamMax && nextTeam != TeamNone {
+		if p.t == nextTeam {
+			if p.allegance < p.maxAllegance {
+				p.allegance += 1
+			}
+		} else {
+			if p.allegance <= 0 {
+				p.t = nextTeam
+				p.allegance += 1
+			} else {
+				p.allegance -= 1
+			}
+		}
+	}
+
 	p.rotation += 0.03
 	return true
 }
@@ -101,6 +139,10 @@ func (p *Planet) RenderInfo() RenderInfo {
 
 func (p *Planet) planetInfo() PlanetInfo {
 	return PlanetInfo{p.x, p.y, p.t.String()}
+}
+
+func (p *Planet) Allegance() (float32, team) {
+	return float32(p.allegance) / float32(p.maxAllegance), p.t
 }
 
 type PlanetInfo struct {
@@ -118,6 +160,7 @@ type PlayerShip struct {
 	renderId       int
 	reloadTime     int
 	fullReloadTime int
+	t              team
 }
 
 func NewPlayerShip(user *User) {
@@ -130,10 +173,14 @@ func NewPlayerShip(user *User) {
 	p.renderId = <-NextRenderId
 	p.fullReloadTime = framesPerSecond / 5
 
+	///XCHANGE HERE
+	p.t = TeamPythons
+	////////
+
 	NewEntity <- &p
 }
 
-func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
+func (p *PlayerShip) update(overworld *Overworld, planets []*Planet) (alive bool) {
 	if p.health <= 0 {
 		p.health = p.maxHealth
 		p.x = 0
@@ -189,23 +236,19 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 	//log.Println(overworld.query(nil, p.x, p.y, p.radius))
 	// log.Println(overworld.query(nil, p.x, p.y+5, p.radius))
 
-	if msg := p.user.GetChatMessage(); msg != nil {
-		for _, other := range overworld.query(p, p.x, p.y, 200) {
-			if other, ok := other.(*PlayerShip); ok {
-				other.user.Send(msg)
-			}
-		}
-	}
-
 	p.reloadTime += 1
 	if p.user.Key("f") && p.fullReloadTime < p.reloadTime {
 		r := float64(p.rotation-90) / 180 * math.Pi
 		vx := float32(math.Cos(r))*16 + p.vx
 		vy := float32(math.Sin(r))*16 + p.vy
-		x := float32(math.Cos(r))*40 + p.x
-		y := float32(math.Sin(r))*40 + p.y
+		x := float32(math.Cos(r))*25 + p.x
+		y := float32(math.Sin(r))*25 + p.y
+		r += math.Pi / 2
+		dx := float32(math.Cos(r)) * 16
+		dy := float32(math.Sin(r)) * 16
 		p.reloadTime = 0
-		go NewBullet(x, y, vx, vy, TeamGophers)
+		go NewBullet(x+dx, y+dy, vx, vy, p.t)
+		go NewBullet(x-dx, y-dy, vx, vy, p.t)
 	}
 
 	return p.user.Connected()
@@ -213,10 +256,14 @@ func (p *PlayerShip) update(overworld *Overworld) (alive bool) {
 
 func (p *PlayerShip) RenderInfo() RenderInfo {
 	return RenderInfo{
-		p.renderId, p.x, p.y, p.rotation, "ship",
+		p.renderId, p.x, p.y, p.rotation, "ship_" + p.t.String(),
 	}
 }
 
 func (p *PlayerShip) damage(damage int, teamSource team) {
 	p.health -= damage
+}
+
+func (p *PlayerShip) team() team {
+	return p.t
 }

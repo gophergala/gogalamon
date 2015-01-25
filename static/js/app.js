@@ -3,8 +3,6 @@ var serverSock = new WebSocket("ws://" + window.location.host + "/sock/");
 
 function welcome() {
 
-
-
 	// Keypress listener
 	var listener = new window.keypress.Listener();
 	listener.register_many([
@@ -39,6 +37,8 @@ function welcome() {
 			}));
 
 			dismissElement(document.getElementById("choose_captain_name"));
+
+			document.getElementById("captain_name_input").blur();
 		} // end if
 	};
 
@@ -428,7 +428,7 @@ function init() {
 
 		// Capturing bar stuff
 		capture.removeAllChildren();
-		
+
 		if(updateData.PlanetAllegance != "") {
 			for(var i = 1; i <= 10; i++) {
 				if(i/10 <= updateData.AllegancePercent) {

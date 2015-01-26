@@ -267,13 +267,29 @@ function init() {
 	createjs.Sound.registerSound("sounds/shipThrust.wav", "shipThrust");
 
 	function playSound(soundToPlay) {
-		createjs.Sound.play(soundToPlay);
+		var instance = createjs.Sound.play(soundToPlay);
+		if (soundToPlay == "laser0" || soundToPlay == "laser1"
+		 || soundToPlay == "laser2") {
+			instance.setVolume(0.25);
+		}
 	} // end playSound()
 
-
+	var thrustingSound = createjs.Sound.play("shipThrust");
 
 	function update(updateData) {
 		// To cache an object: DisplayObject.cache()
+
+		if (thrustingSound.playState === "playFailed"){
+			thrustingSound = createjs.Sound.play("shipThrust");
+			thrustingSound.play()
+			thrustingSound.setLoop(100000000);
+		} else {
+			if (thrustingSound.paused && updateData.EngineSound) {
+				thrustingSound.resume();
+			} else if (!thrustingSound.paused && !updateData.EngineSound) {
+				thrustingSound.pause();
+			}
+		}
 
 		var newNames = new Set();
 		for (var i = 0; i < updateData.Objs.length; i++){

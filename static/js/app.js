@@ -369,32 +369,20 @@ function init() {
 			var targetRotation = currentObject.R;
 
 			if(currentRotation < 5 && currentRotation > -5) {
-				currentRotation = 0;
+				objectBitmap.rotation = 0;
 			} else if(currentRotation < 95 && currentRotation > 85) {
-				currentRotation = 90;
+				objectBitmap.rotation = 90;
 			} else if(currentRotation < 185 && currentRotation > 175) {
-				currentRotation = 180;
+				objectBitmap.rotation = 180;
 			} else if(currentRotation < 275 && currentRotation > 265) {
-				currentRotation = 270;
+				objectBitmap.rotation = 270;
 			} 
-
 
 			if(targetRotation < 0) {
 				targetRotation += 360;
 			} else if(targetRotation >= 360) {
 				targetRotation -= 360;
 			}
-
-			//if(targetRotation == 0) {
-			//	if(currentRotation <= 360 && currentRotation >= 181) {
-			//		targetRotation = 360;
-			//	}
-			//}
-
-
-
-			//console.log("targetRotation: " + targetRotation);
-			//console.log("currentRotation: " + currentRotation);
 
 			if(currentObject.N.indexOf("ship") != -1) {
 				createjs.Tween.get(objectBitmap, {override:true}).to({rotation:targetRotation}, 100, createjs.Ease.getPowInOut(2));

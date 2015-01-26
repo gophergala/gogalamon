@@ -2,7 +2,7 @@ body {
 	background-color: #111111;
 	background-repeat: no-repeat;
 	background-image: url("/img/background.png");
-	background-position-x: center;
+	background-position: center top;
 }
 
 canvas {
